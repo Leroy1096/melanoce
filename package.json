@@ -2,7 +2,6 @@
   "name": "melanoce",
   "version": "1.0.0",
   "description": "MELA NOCE — Système d'exploitation virtuel hybride (Web Desktop, Linux Container, Android PWA Pocket PC). Conception et réalisation : Kouamelan.",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
