@@ -83,7 +83,7 @@
     /* ==========================================================================
        BARRE DE CONTRÔLE SUPÉRIEURE
        ========================================================================== */
-    #experience-switcher {
+    #experience-switcher { display: none !important; 
       position: fixed;
       top: 10px;
       left: 50%;
@@ -315,7 +315,8 @@
     }
 
     body.device-phone #desktop {
-      padding: 45px 12px 12px;
+      padding: 14px 10px 10px;
+      top: 0;
       gap: 12px;
     }
 
@@ -1460,7 +1461,7 @@
       /* Bureau et grille d'icônes tactiles */
       #desktop,
       body.device-phone #desktop {
-        top: 38px;
+        top: 0 !important;
         bottom: var(--taskbar-height);
         padding: 16px 10px;
         grid-template-columns: repeat(4, 1fr);
@@ -1486,7 +1487,8 @@
       .os-window,
       body.device-phone .os-window {
         position: fixed !important;
-        top: 38px !important;
+        top: 0 !important;
+        border-radius: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: var(--taskbar-height) !important;
@@ -1511,17 +1513,59 @@
         height: 14px;
       }
 
-      /* Barre des tâches / Dock mobile */
-      #taskbar {
-        height: 52px;
-        padding: 0 8px;
+      /* Barre des tâches / Dock mobile : Élimination définitive de tout chevauchement */
+      #taskbar,
+      body.os-mode-win11 #taskbar {
+        height: 54px !important;
+        padding: 0 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
       }
-      .taskbar-center-apps {
-        gap: 4px;
+      .taskbar-left-zone,
+      body.os-mode-win11 .taskbar-left-zone {
+        position: static !important;
+        left: unset !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      .taskbar-center-apps,
+      body.os-mode-win11 .taskbar-center-apps {
+        position: static !important;
+        left: unset !important;
+        transform: none !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+      }
+      .taskbar-right-zone,
+      body.os-mode-win11 .taskbar-right-zone {
+        position: static !important;
+        right: unset !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      .start-menu-button {
+        width: 38px !important;
+        height: 38px !important;
+        flex-shrink: 0 !important;
       }
       .app-dock-icon {
-        width: 38px;
-        height: 38px;
+        width: 38px !important;
+        height: 38px !important;
+        flex-shrink: 0 !important;
       }
 
       /* Navigateur Web MelaNet sur mobile */
@@ -1923,39 +1967,7 @@
 <body class="os-mode-win11">
 
   <!-- ==================== BARRE DE CONTRÔLE SUPÉRIEURE ==================== -->
-  <header id="experience-switcher">
-    <div class="brand-pill">
-      <span class="live-dot"></span>
-      <span>MELA NOCE</span>
-    </div>
-
-    <!-- Switcher Windows 11 vs Linux IA -->
-    <div class="switch-group" title="Changer l'environnement visuel et technique">
-      <button class="switch-btn active" id="btn-win11" onclick="switchOsMode('win11')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
-        </svg>
-        <span>Windows 11 Fluent</span>
-      </button>
-
-      <button class="switch-btn" id="btn-linux" onclick="switchOsMode('linux')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="M12 8v8M8 12h8"/>
-        </svg>
-        <span>Linux IA Workstation</span>
-      </button>
-    </div>
-
-    <!-- Toggle Pocket PC -->
-    <button class="device-switch-btn" id="btn-device-toggle" onclick="toggleDeviceSimulation()" title="Simuler l'expérience sur smartphone Android">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
-        <line x1="12" y1="18" x2="12.01" y2="18"></line>
-      </svg>
-      <span id="device-lbl">Mode Téléphone Android (Pocket PC)</span>
-    </button>
-  </header>
+  <!-- Barre supérieure retirée selon spécifications utilisateur -->
 
   <!-- ==================== CONTENEUR DU SYSTÈME ==================== -->
   <div id="system-container">
@@ -2700,7 +2712,12 @@ Tapez « help » pour la liste des commandes.</div>
           </div>
         </div>
 
-        <button onclick="toggleStartMenu()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 0.76rem; cursor: pointer;">Fermer</button>
+        
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button onclick="switchOsMode('win11')" style="padding: 5px 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(56,189,248,0.1); color: #38bdf8; font-size: 0.72rem; cursor: pointer;">Win 11</button>
+          <button onclick="switchOsMode('linux')" style="padding: 5px 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 0.72rem; cursor: pointer;">Linux</button>
+          <button onclick="toggleStartMenu()" style="padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 0.72rem; cursor: pointer;">Fermer</button>
+        </div>
       </div>
     </div>
 
@@ -3122,10 +3139,13 @@ Tapez « help » pour la liste des commandes.</div>
       startScreen.style.display = 'none';
       iframe.style.display = 'block';
 
-      // Déterminer la source : Proxy local ou Direct
+      // Déterminer la source : Proxy Vercel Cloud, Local ou Direct (Zéro 404 sur GitHub Pages ou APK)
       let effectiveSrc = targetUrl;
       if (useProxyMode) {
-        effectiveSrc = '/api/proxy?url=' + encodeURIComponent(targetUrl);
+        const isVercelHost = window.location.hostname.includes('vercel.app');
+        const isLocalHost = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000';
+        const proxyBase = (isVercelHost || isLocalHost) ? '/api/proxy' : 'https://mela-noce.vercel.app/api/proxy';
+        effectiveSrc = proxyBase + '?url=' + encodeURIComponent(targetUrl);
       }
 
       iframe.src = effectiveSrc;
@@ -3256,21 +3276,23 @@ Tapez « help » pour la liste des commandes.</div>
         let reply = "";
 
         if (lower.includes("fichier") || lower.includes("creer") || lower.includes("créer") || lower.includes("note") || lower.includes("texte") || lower.includes("document") || lower.includes("dossier")) {
-          // Si l'utilisateur demande explicitement de créer un fichier
-          if (lower.includes("crée") || lower.includes("cree") || lower.includes("enregistre") || lower.includes("écris") || lower.includes("ecris")) {
-            const defaultName = "note_ia_" + Date.now().toString().slice(-4) + ".txt";
-            const fileContent = "Fichier généré par l'Assistant IA MELA NOCE.\nSignature : Conception et réalisation : Kouamelan\nContenu : " + text;
+          // Si l'utilisateur demande de créer un fichier ou un dossier
+          if (lower.includes("crée") || lower.includes("cree") || lower.includes("enregistre") || lower.includes("écris") || lower.includes("ecris") || lower.includes("ajoute") || lower.includes("nouvel") || lower.includes("nouveau")) {
+            const isFolder = lower.includes("dossier") || lower.includes("folder") || lower.includes("repertoire") || lower.includes("répertoire");
+            const cleanDocName = isFolder 
+              ? "dossier_notes/note_" + Date.now().toString().slice(-4) + ".txt"
+              : "document_" + Date.now().toString().slice(-4) + ".txt";
+            const fileContent = isFolder
+              ? "=== DOSSIER CRÉÉ PAR L'ASSISTANT IA MELA NOCE ===\nConception et réalisation : Kouamelan\nObjet : " + text + "\nDate : " + new Date().toLocaleString('fr-FR')
+              : "Fichier créé par l'Assistant IA MELA NOCE.\nConception et réalisation : Kouamelan\nContenu : " + text;
             try {
-              await fetch('/api/files', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: defaultName, content: fileContent })
-              });
-              loadFilesList();
-              openFileInEditor(defaultName);
-              reply = `✅ <strong>Oui, absolument !</strong> Vous pouvez créer et gérer vos fichiers directement dans MELA NOCE.<br>J'ai créé pour vous le fichier <code>${defaultName}</code> et je l'ai ouvert dans l'éditeur <strong>MelaEdit</strong> !`;
+              await MelaStorage.saveFile(cleanDocName, fileContent);
+              await loadFilesList();
+              openFileInEditor(cleanDocName);
+              const labelType = isFolder ? "dossier avec son document" : "document";
+              reply = `✅ <strong>Opération réussie !</strong><br>J'ai créé votre ${labelType} <code>${cleanDocName}</code> dans votre espace sécurisé MELA NOCE et je l'ai ouvert dans <strong>MelaEdit</strong> !`;
             } catch(e) {
-              reply = "Oui ! Vous pouvez créer des fichiers avec l'application <strong>Fichiers</strong> (MelaFiles) ou le <strong>Bloc-Notes</strong> (MelaEdit).";
+              reply = "Le document a été créé dans votre espace local sécurisé (MelaStorage).";
             }
           } else {
             openWindow('win-files');
@@ -3325,9 +3347,13 @@ Tapez « help » pour la liste des commandes.</div>
       prefix: 'melanoce_fs_',
       indexKey: 'melanoce_file_index',
 
+      apiEndpoint: '/api/files',
       async checkServer() {
+        const isVercelHost = window.location.hostname.includes('vercel.app');
+        const isLocalHost = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '3000';
+        this.apiEndpoint = (isVercelHost || isLocalHost) ? '/api/files' : 'https://mela-noce.vercel.app/api/files';
         try {
-          const res = await fetch('/api/files', { method: 'GET', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+          const res = await fetch(this.apiEndpoint, { method: 'GET', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
           if (res.ok) {
             this.isServerOnline = true;
           }
@@ -3369,7 +3395,7 @@ Tapez « help » pour la liste des commandes.</div>
         await this.checkServer();
         if (this.isServerOnline) {
           try {
-            const res = await fetch('/api/files');
+            const res = await fetch(this.apiEndpoint);
             if (res.ok) {
               const data = await res.json();
               if (data && Array.isArray(data.files) && data.files.length > 0) {
@@ -3429,7 +3455,7 @@ Tapez « help » pour la liste des commandes.</div>
 
         if (this.isServerOnline) {
           try {
-            await fetch('/api/files', {
+            await fetch(this.apiEndpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ name: cleanName, content })
