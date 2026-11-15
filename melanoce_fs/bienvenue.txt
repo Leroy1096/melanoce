@@ -1,0 +1,7 @@
+Bienvenue sur MELA NOCE OS !
+===========================
+Slogan : Your Device. Your Universe.
+Signature officielle : Conception et réalisation : Kouamelan
+
+Vous pouvez créer, éditer, renommer et sauvegarder vos fichiers dans cet environnement.
+Testez l'éditeur de texte MelaEdit ou tapez des commandes dans le Terminal !

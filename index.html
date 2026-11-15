@@ -1,0 +1,4105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MELA NOCE — Système d'Exploitation Hybride & Navigateur HTTPS</title>
+  
+  <!-- Métadonnées PWA & SEO Officielles -->
+  <meta name="application-name" content="MELA NOCE">
+  <meta name="apple-mobile-web-app-title" content="MELA NOCE">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0f19">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="description" content="MELA NOCE — Système d'exploitation virtuel hybride avec navigateur Web HTTPS débloqueur. Conception et réalisation : Kouamelan.">
+  <meta name="author" content="Kouamelan">
+
+  <style>
+    /* ==========================================================================
+       VARIABLES GLOBALES & PALETTES THÈMES
+       ========================================================================== */
+    :root {
+      --bg-dark: #090d16;
+      --bg-glass: rgba(18, 24, 38, 0.85);
+      --bg-glass-card: rgba(255, 255, 255, 0.04);
+      --bg-glass-active: rgba(28, 38, 60, 0.96);
+      --bg-glass-header: rgba(13, 18, 30, 0.94);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --border-accent: rgba(56, 189, 248, 0.4);
+      --accent-primary: #38bdf8;
+      --accent-secondary: #818cf8;
+      --accent-emerald: #34d399;
+      --accent-purple: #c084fc;
+      --accent-ai: #d946ef;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --taskbar-height: 54px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-window: 0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px var(--border-glass);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    body.os-mode-linux {
+      --bg-dark: #0a0b10;
+      --bg-glass: rgba(17, 20, 28, 0.9);
+      --bg-glass-header: rgba(10, 12, 18, 0.96);
+      --accent-primary: #f97316;
+      --accent-secondary: #06b6d4;
+      --accent-gradient: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #8b5cf6 100%);
+      --border-accent: rgba(249, 115, 22, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: var(--font-stack);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background-color 0.4s ease;
+    }
+
+    input, textarea, .chat-bubble, .term-out, pre, code, .browser-address-input {
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+
+    /* ==========================================================================
+       BARRE DE CONTRÔLE SUPÉRIEURE
+       ========================================================================== */
+    #experience-switcher {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      background: rgba(10, 15, 26, 0.94);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 999px;
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.2);
+      max-width: 95vw;
+      transition: all 0.3s ease;
+    }
+
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      padding-right: 10px;
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .switch-group {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px;
+      padding: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .switch-btn {
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .switch-btn.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .device-switch-btn {
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .device-switch-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    /* ==========================================================================
+       CONTENEUR DU SYSTÈME & MODE POCKET PC
+       ========================================================================== */
+    #system-container {
+      position: absolute;
+      inset: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    body.device-phone #system-container {
+      top: 55px;
+      bottom: 20px;
+      left: calc(50% - 200px);
+      width: 400px;
+      height: 800px;
+      max-height: calc(100vh - 80px);
+      border-radius: 38px;
+      border: 8px solid #1e293b;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    #phone-notch {
+      display: none;
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 20px;
+      background: #0f172a;
+      border-radius: 999px;
+      z-index: 999999;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    body.device-phone #phone-notch {
+      display: block;
+    }
+
+    /* ==========================================================================
+       FONDS D'ÉCRAN
+       ========================================================================== */
+    #wallpaper {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 15% 15%, #172554 0%, transparent 45%),
+                  radial-gradient(circle at 85% 20%, #1e1b4b 0%, transparent 50%),
+                  radial-gradient(circle at 50% 85%, #042f2e 0%, transparent 50%),
+                  linear-gradient(180deg, #090d16 0%, #030712 100%);
+      z-index: 1;
+      transition: background 0.8s ease;
+    }
+
+    body.os-mode-linux #wallpaper {
+      background: radial-gradient(circle at 20% 20%, #431407 0%, transparent 50%),
+                  radial-gradient(circle at 80% 30%, #1e1b4b 0%, transparent 55%),
+                  radial-gradient(circle at 50% 80%, #0c0a17 0%, transparent 50%),
+                  linear-gradient(180deg, #0d0914 0%, #050408 100%);
+    }
+
+    #wallpaper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* ==========================================================================
+       BARRE SUPÉRIEURE LINUX IA
+       ========================================================================== */
+    #linux-topbar {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 32px;
+      background: rgba(10, 12, 18, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 1500;
+      padding: 0 16px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+
+    body.os-mode-linux #linux-topbar {
+      display: flex;
+    }
+
+    body.os-mode-linux #desktop {
+      padding-top: 48px;
+    }
+
+    .linux-topbar-left, .linux-topbar-center, .linux-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .linux-activity-btn {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+      font-weight: 700;
+      font-size: 0.74rem;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       BUREAU PRINCIPAL (DESKTOP)
+       ========================================================================== */
+    #desktop {
+      position: absolute;
+      inset: 0;
+      bottom: var(--taskbar-height);
+      z-index: 10;
+      padding: 60px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 18px;
+      overflow: hidden;
+    }
+
+    body.device-phone #desktop {
+      padding: 45px 12px 12px;
+      gap: 12px;
+    }
+
+    .desktop-icon-btn {
+      width: 86px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 4px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: 1px solid transparent;
+      outline: none;
+    }
+
+    body.device-phone .desktop-icon-btn {
+      width: 74px;
+    }
+
+    .desktop-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      transform: translateY(-2px);
+    }
+
+    .icon-glyph-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease;
+    }
+
+    body.device-phone .icon-glyph-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+    }
+
+    .desktop-icon-btn:hover .icon-glyph-box {
+      transform: scale(1.08);
+    }
+
+    .icon-label-text {
+      font-size: 0.76rem;
+      color: #ffffff;
+      text-align: center;
+      font-weight: 500;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+      line-height: 1.2;
+    }
+
+    .desktop-watermark-area {
+      position: absolute;
+      bottom: 20px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    body.device-phone .desktop-watermark-area {
+      bottom: 12px;
+      right: 14px;
+      opacity: 0.4;
+    }
+
+    .wm-brand {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(148,163,184,0.3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    body.device-phone .wm-brand {
+      font-size: 1.2rem;
+    }
+
+    .wm-credits {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: rgba(148, 163, 184, 0.85);
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       GESTIONNAIRE DE FENÊTRES (WINDOW MANAGER)
+       ========================================================================== */
+    .os-window {
+      position: absolute;
+      background: var(--bg-glass);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-window);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 320px;
+      min-height: 240px;
+      z-index: 100;
+      opacity: 0;
+      transform: scale(0.95) translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+      pointer-events: none;
+    }
+
+    .os-window.open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .os-window.active {
+      border-color: var(--border-accent);
+      box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-accent);
+    }
+
+    .os-window.minimized {
+      opacity: 0;
+      transform: scale(0.8) translateY(80px);
+      pointer-events: none;
+    }
+
+    .os-window.maximized {
+      top: 10px !important;
+      left: 10px !important;
+      width: calc(100% - 20px) !important;
+      height: calc(100% - var(--taskbar-height) - 20px) !important;
+      border-radius: 12px;
+    }
+
+    body.os-mode-linux .os-window.maximized {
+      top: 38px !important;
+      height: calc(100% - var(--taskbar-height) - 48px) !important;
+    }
+
+    body.device-phone .os-window {
+      min-width: unset;
+      width: calc(100% - 16px) !important;
+      left: 8px !important;
+      top: 40px !important;
+      height: calc(100% - var(--taskbar-height) - 50px) !important;
+    }
+
+    .win-header-bar {
+      height: 42px;
+      background: var(--bg-glass-header);
+      border-bottom: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      cursor: grab;
+    }
+
+    .win-header-bar:active {
+      cursor: grabbing;
+    }
+
+    body.os-mode-linux .win-header-bar {
+      flex-direction: row-reverse;
+    }
+
+    .win-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .win-ctrl-buttons {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .win-ctrl-btn {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: all 0.15s ease;
+    }
+
+    .win-ctrl-btn:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .win-ctrl-btn.close { background: #ef4444; }
+    .win-ctrl-btn.minimize { background: #f59e0b; }
+    .win-ctrl-btn.maximize { background: #10b981; }
+
+    .win-body-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: rgba(10, 14, 25, 0.6);
+    }
+
+    /* ==========================================================================
+       NAVIGATEUR WEB SÉCURISÉ HTTPS (MELANET BROWSER)
+       ========================================================================== */
+    .browser-toolbar {
+      display: flex;
+      flex-direction: column;
+      background: rgba(14, 20, 34, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      gap: 8px;
+    }
+
+    .browser-nav-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .browser-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+    }
+
+    .browser-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .browser-address-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 4px 12px;
+      gap: 8px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .browser-ssl-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #34d399;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .browser-address-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: var(--font-stack);
+      font-size: 0.85rem;
+    }
+
+    .browser-mode-toggle {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(217, 70, 239, 0.4);
+      background: rgba(217, 70, 239, 0.15);
+      color: #f5d0fe;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .browser-mode-toggle:hover {
+      background: rgba(217, 70, 239, 0.3);
+      color: #ffffff;
+    }
+
+    .browser-bookmarks-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 2px 0;
+    }
+
+    .browser-bookmarks-bar::-webkit-scrollbar { display: none; }
+
+    .bookmark-chip {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .bookmark-chip:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+
+    .browser-progress-track {
+      height: 3px;
+      width: 100%;
+      background: transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .browser-progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--accent-gradient);
+      box-shadow: 0 0 8px #38bdf8;
+      transition: width 0.3s ease, opacity 0.3s ease;
+    }
+
+    .browser-frame-container {
+      flex: 1;
+      position: relative;
+      background: #0d121f;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #browser-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #ffffff;
+    }
+
+    /* Page d'accueil MelaNet Start */
+    .melanet-start-screen {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0b0f19 75%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      overflow-y: auto;
+    }
+
+    .melanet-logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .melanet-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .melanet-search-form {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 999px;
+      padding: 8px 18px;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+      margin-bottom: 28px;
+    }
+
+    .melanet-search-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+
+    .melanet-tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    @media (max-width: 600px) {
+      .melanet-tiles-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .melanet-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .melanet-tile:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .tile-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .tile-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    /* ==========================================================================
+       INTERFACE DU COPILOTE IA
+       ========================================================================== */
+    .ai-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 12px;
+    }
+
+    .ai-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(217, 70, 239, 0.1);
+      border: 1px solid rgba(217, 70, 239, 0.25);
+      border-radius: 10px;
+      font-size: 0.74rem;
+      color: #f5d0fe;
+    }
+
+    .ai-chip-suggestions {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .ai-chip-suggestions::-webkit-scrollbar { display: none; }
+
+    .ai-chip {
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      color: #e2e8f0;
+      font-size: 0.74rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .ai-chip:hover {
+      background: rgba(217, 70, 239, 0.2);
+      border-color: rgba(217, 70, 239, 0.4);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .ai-chat-thread {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 4px;
+      min-height: 220px;
+    }
+
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      max-width: 90%;
+      animation: fadeInMsg 0.25s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-msg.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .chat-msg.assistant { align-self: flex-start; }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.76rem;
+      font-weight: bold;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-msg.assistant .msg-avatar {
+      background: linear-gradient(135deg, #d946ef, #8b5cf6);
+      color: #ffffff;
+    }
+
+    .chat-msg.user .msg-avatar {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #ffffff;
+    }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .chat-msg.assistant .chat-bubble {
+      background: rgba(25, 30, 48, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f1f5f9;
+      border-top-left-radius: 4px;
+    }
+
+    .chat-msg.user .chat-bubble {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border-top-right-radius: 4px;
+      font-weight: 500;
+    }
+
+    .chat-bubble pre {
+      background: #080b14;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #38bdf8;
+    }
+
+    .action-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      margin-right: 6px;
+      padding: 5px 12px;
+      background: rgba(56, 189, 248, 0.18);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 999px;
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn-pill:hover {
+      background: var(--accent-primary);
+      color: #0b0f19;
+      transform: translateY(-1px);
+    }
+
+    .ai-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 8px 12px;
+    }
+
+    .ai-input-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 0.88rem;
+    }
+
+    .ai-send-action-btn {
+      padding: 7px 16px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #d946ef, #8b5cf6);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ==========================================================================
+       BARRE DES TÂCHES (TASKBAR)
+       ========================================================================== */
+    #taskbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--taskbar-height);
+      background: rgba(10, 14, 24, 0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border-glass);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+    }
+
+    body.os-mode-win11 #taskbar { justify-content: center; }
+
+    body.os-mode-win11 .taskbar-center-apps {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.os-mode-win11 .taskbar-left-zone { position: absolute; left: 14px; }
+    body.os-mode-win11 .taskbar-right-zone { position: absolute; right: 14px; }
+
+    body.os-mode-linux .taskbar-center-apps {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 10px;
+    }
+
+    .start-menu-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+      border: 1px solid var(--border-accent);
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .app-dock-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .app-dock-icon:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .app-dock-icon.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--accent-primary);
+    }
+
+    .app-dock-icon.active::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      width: 14px;
+      height: 3px;
+      background: var(--accent-primary);
+      border-radius: 999px;
+      box-shadow: 0 0 6px var(--accent-primary);
+    }
+
+    .systray-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      color: #94a3b8;
+      font-size: 0.78rem;
+    }
+
+    .systray-clock { color: #ffffff; font-weight: 600; font-size: 0.82rem; }
+
+    /* ==========================================================================
+       MENU DÉMARRER
+       ========================================================================== */
+    #start-menu {
+      position: absolute;
+      bottom: calc(var(--taskbar-height) + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px) scale(0.96);
+      width: 460px;
+      background: rgba(14, 19, 32, 0.95);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.85);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    body.os-mode-linux #start-menu {
+      left: 14px;
+      transform: translateY(20px) scale(0.96);
+    }
+
+    #start-menu.open {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    body.os-mode-linux #start-menu.open {
+      transform: translateY(0) scale(1);
+    }
+
+    body.device-phone #start-menu {
+      width: calc(100% - 20px);
+      left: 50%;
+    }
+
+    .start-search-box {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .search-input-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 9px 14px;
+      color: #94a3b8;
+    }
+
+    .search-input-pill input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 0.88rem;
+    }
+
+    .start-grid-scroll { padding: 20px; max-height: 380px; overflow-y: auto; }
+    .start-section-lbl {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .start-apps-layout {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .start-app-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 8px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+    }
+
+    .start-app-tile:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+
+    .tile-glyph-shape {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tile-name-lbl { font-size: 0.78rem; color: #e2e8f0; font-weight: 500; text-align: center; }
+
+    .start-user-footer {
+      padding: 14px 20px;
+      background: rgba(8, 12, 22, 0.98);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-info-row { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-tag {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 0.88rem;
+    }
+
+    .user-name-title { font-size: 0.86rem; font-weight: 600; color: #ffffff; }
+    .user-signature-sub { font-size: 0.7rem; color: var(--accent-primary); }
+
+    /* ==================== STYLES MELAFILES & MELAEDIT ==================== */
+    .files-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .files-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+    }
+    .files-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f1f5f9;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .files-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+    }
+    .files-btn.primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+    .files-btn.primary:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+    }
+    .files-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .files-view {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      overflow-y: auto;
+      align-content: flex-start;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .file-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .file-card:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+    .file-card.selected {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+    .file-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .file-card-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #f1f5f9;
+      word-break: break-word;
+      max-width: 100%;
+      line-height: 1.3;
+    }
+    .file-card-meta {
+      font-size: 0.68rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .files-statusbar {
+      padding: 7px 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Styles Éditeur de texte MelaEdit */
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+    }
+    .editor-filename-input {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      width: 200px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .editor-filename-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
+    .editor-textarea {
+      flex: 1;
+      background: #060913;
+      color: #f8fafc;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      padding: 16px;
+      border: none;
+      outline: none;
+      resize: none;
+      tab-size: 2;
+    }
+    .editor-statusbar {
+      padding: 7px 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE MOBILE / SMARTPHONE & POCKET PC NATIVE SUPPORT (@media <= 768px)
+       ========================================================================== */
+    @media (max-width: 768px) {
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button, a, .desktop-icon-btn, .start-app-tile, .app-dock-icon, .file-card {
+        touch-action: manipulation;
+      }
+
+      /* Plein écran mobile natif sans bordures de simulation */
+      #system-container,
+      body.device-phone #system-container {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: none !important;
+        left: 0 !important;
+        top: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+
+      #phone-notch,
+      body.device-phone #phone-notch {
+        display: none !important;
+      }
+
+      /* Barre supérieure compacte pour smartphone */
+      #experience-switcher {
+        height: 38px;
+        padding: 0 8px;
+        gap: 6px;
+      }
+      .brand-pill {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+      }
+      .switch-btn span,
+      .device-switch-btn span {
+        display: none;
+      }
+      .switch-btn, .device-switch-btn {
+        padding: 4px 8px;
+      }
+
+      /* Bureau et grille d'icônes tactiles */
+      #desktop,
+      body.device-phone #desktop {
+        top: 38px;
+        bottom: var(--taskbar-height);
+        padding: 16px 10px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        justify-items: center;
+      }
+
+      .desktop-icon-btn,
+      body.device-phone .desktop-icon-btn {
+        width: 68px;
+      }
+      .icon-glyph-box,
+      body.device-phone .icon-glyph-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+      .icon-label-text {
+        font-size: 0.68rem;
+      }
+
+      /* Fenêtres adaptatives plein écran sur mobile */
+      .os-window,
+      body.device-phone .os-window {
+        position: fixed !important;
+        top: 38px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: var(--taskbar-height) !important;
+        width: 100% !important;
+        height: calc(100dvh - var(--taskbar-height) - 38px) !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        border-radius: 16px 16px 0 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+      }
+      .win-header-bar {
+        height: 42px;
+        padding: 0 12px;
+      }
+      .win-title-wrap {
+        font-size: 0.8rem;
+      }
+      .win-ctrl-btn {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Barre des tâches / Dock mobile */
+      #taskbar {
+        height: 52px;
+        padding: 0 8px;
+      }
+      .taskbar-center-apps {
+        gap: 4px;
+      }
+      .app-dock-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      /* Navigateur Web MelaNet sur mobile */
+      .browser-nav-bar {
+        padding: 6px 8px;
+        gap: 6px;
+      }
+      .browser-nav-btn {
+        width: 28px;
+        height: 28px;
+      }
+      .browser-address-bar {
+        height: 32px;
+        padding: 0 8px;
+      }
+      .browser-ssl-badge span {
+        display: none;
+      }
+      .browser-address-input {
+        font-size: 16px; /* Empêche le zoom auto sur iOS */
+      }
+      .browser-mode-toggle span {
+        display: none;
+      }
+      .browser-mode-toggle {
+        padding: 4px 8px;
+      }
+      .browser-chips-bar {
+        padding: 6px 8px;
+        gap: 6px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .browser-chip {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        padding: 3px 8px;
+      }
+
+      /* Explorateur MelaFiles sur mobile */
+      .files-toolbar {
+        padding: 8px 10px;
+        gap: 6px;
+      }
+      .files-btn {
+        padding: 5px 8px;
+        font-size: 0.74rem;
+      }
+      .files-view {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 10px;
+      }
+      .file-card {
+        padding: 10px 6px;
+      }
+      .file-card-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 0.75rem;
+      }
+      .file-card-name {
+        font-size: 0.72rem;
+      }
+
+      /* Bloc-Notes MelaEdit sur mobile */
+      .editor-toolbar {
+        padding: 6px 10px;
+        gap: 6px;
+      }
+      .editor-filename-input {
+        width: 130px;
+        font-size: 16px;
+      }
+      .editor-textarea {
+        font-size: 16px;
+        padding: 12px;
+      }
+
+      /* Assistant IA Chat sur mobile */
+      .chat-messages-container {
+        padding: 12px;
+      }
+      .chat-bubble {
+        max-width: 86%;
+        font-size: 0.82rem;
+      }
+      .chat-input-bar {
+        padding: 8px 10px;
+      }
+      .chat-input-field {
+        font-size: 16px;
+      }
+
+      /* Terminal sur mobile */
+      #term-input {
+        font-size: 16px;
+      }
+
+      /* Menu Démarrer sur mobile */
+      #start-menu {
+        width: calc(100% - 16px) !important;
+        left: 50% !important;
+        bottom: 58px !important;
+      }
+      .start-apps-layout {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .start-app-tile {
+        padding: 8px 4px;
+      }
+      .tile-name-lbl {
+        font-size: 0.68rem;
+      }
+    }
+  
+    /* ==========================================================================
+       APPLICATION : CALCULATRICE SCIENTIFIQUE MELA NOCE
+       ========================================================================== */
+    .calc-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: rgba(11, 15, 25, 0.85);
+      user-select: none;
+    }
+    .calc-screen {
+      padding: 16px 18px 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: right;
+    }
+    .calc-expr {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      min-height: 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace, sans-serif;
+    }
+    .calc-result {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #f8fafc;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace, sans-serif;
+      margin-top: 4px;
+    }
+    .calc-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.74rem;
+    }
+    .calc-mode-btn {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #38bdf8;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.72rem;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 10px;
+      flex: 1;
+    }
+    .calc-btn {
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f1f5f9;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+    }
+    .calc-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+    .calc-btn:active {
+      transform: scale(0.97);
+    }
+    .calc-btn.op {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    .calc-btn.func {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      font-size: 0.8rem;
+      border-color: rgba(168, 85, 247, 0.25);
+    }
+    .calc-btn.equal {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      border-color: #38bdf8;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .calc-btn.clear {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    /* ==========================================================================
+       APPLICATION : CALENDRIER & HORLOGE MONDIALE MELA NOCE
+       ========================================================================== */
+    .cal-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: rgba(11, 15, 25, 0.85);
+      user-select: none;
+    }
+    .cal-tabs-nav {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .cal-tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-bottom: 2px solid transparent;
+      text-align: center;
+    }
+    .cal-tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.06);
+    }
+    .cal-tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: none;
+    }
+    .cal-tab-content.active {
+      display: block;
+    }
+    .cal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .cal-month-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f8fafc;
+      text-transform: capitalize;
+    }
+    .cal-nav-btn {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cal-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .cal-grid-table {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+    .cal-week-day {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      padding: 6px 0;
+    }
+    .cal-day-cell {
+      padding: 8px 0;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      position: relative;
+    }
+    .cal-day-cell:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .cal-day-cell.today {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .cal-day-cell.selected {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+    .cal-day-cell.has-note::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+    .cal-day-cell.other-month {
+      color: #475569;
+    }
+    .cal-notes-box {
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+    .world-clock-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .world-clock-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .world-clock-city {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .world-clock-tz {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+    .world-clock-time {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace, sans-serif;
+      margin-top: 4px;
+    }
+    .stopwatch-box {
+      text-align: center;
+      padding: 24px 12px;
+    }
+    .stopwatch-display {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace, sans-serif;
+      margin-bottom: 20px;
+    }
+    .stopwatch-ctrls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .systray-pill {
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body class="os-mode-win11">
+
+  <!-- ==================== BARRE DE CONTRÔLE SUPÉRIEURE ==================== -->
+  <header id="experience-switcher">
+    <div class="brand-pill">
+      <span class="live-dot"></span>
+      <span>MELA NOCE</span>
+    </div>
+
+    <!-- Switcher Windows 11 vs Linux IA -->
+    <div class="switch-group" title="Changer l'environnement visuel et technique">
+      <button class="switch-btn active" id="btn-win11" onclick="switchOsMode('win11')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+        </svg>
+        <span>Windows 11 Fluent</span>
+      </button>
+
+      <button class="switch-btn" id="btn-linux" onclick="switchOsMode('linux')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 8v8M8 12h8"/>
+        </svg>
+        <span>Linux IA Workstation</span>
+      </button>
+    </div>
+
+    <!-- Toggle Pocket PC -->
+    <button class="device-switch-btn" id="btn-device-toggle" onclick="toggleDeviceSimulation()" title="Simuler l'expérience sur smartphone Android">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>
+      <span id="device-lbl">Mode Téléphone Android (Pocket PC)</span>
+    </button>
+  </header>
+
+  <!-- ==================== CONTENEUR DU SYSTÈME ==================== -->
+  <div id="system-container">
+    <div id="phone-notch"></div>
+    <div id="wallpaper"></div>
+
+    <!-- Barre supérieure Linux -->
+    <div id="linux-topbar">
+      <div class="linux-topbar-left">
+        <span class="linux-activity-btn" onclick="toggleStartMenu()">Activités</span>
+        <span style="font-weight: 600; color: #f97316;">MELA NOCE IA</span>
+      </div>
+      <div class="linux-topbar-center" id="linux-top-clock" onclick="openWindow('win-calendar')" style="cursor: pointer;" title="Ouvrir le Calendrier">12:00</div>
+      <div class="linux-topbar-right">
+        <span>● En ligne</span>
+        <span>Conception : Kouamelan</span>
+      </div>
+    </div>
+
+    <!-- BUREAU PRINCIPAL -->
+    <main id="desktop" onclick="handleDesktopClick(event)">
+      <!-- 1. Navigateur Web HTTPS (MelaNet) -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-browser')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #0284c7, #06b6d4); box-shadow: 0 10px 25px rgba(2, 132, 199, 0.45);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <div class="icon-label-text">Navigateur Web</div>
+      </div>
+
+      <!-- 2. Explorateur de Fichiers MelaFiles -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-files')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.45);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div class="icon-label-text">Fichiers</div>
+      </div>
+
+      <!-- 3. Éditeur de Texte / Code MelaEdit -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-editor')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.45);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div class="icon-label-text">Bloc-Notes</div>
+      </div>
+
+      <!-- 4. Assistant IA MELA NOCE -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-ai')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #d946ef, #8b5cf6); box-shadow: 0 10px 25px rgba(217, 70, 239, 0.45);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+        <div class="icon-label-text">Assistant IA</div>
+      </div>
+
+      <!-- 3. À Propos de MELA NOCE -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-about')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <div class="icon-label-text">À Propos</div>
+      </div>
+
+      <!-- 4. Terminal IA -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-terminal')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border: 1px solid var(--border-accent);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+        </div>
+        <div class="icon-label-text">Terminal IA</div>
+      </div>
+
+      <!-- 5. Paramètres -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-settings')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #475569, #334155);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <div class="icon-label-text">Paramètres</div>
+      </div>
+
+      
+      <!-- Calculatrice Scientifique MELA NOCE -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-calculator')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.45);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="16" y1="14" x2="16" y2="18"></line>
+            <path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path>
+            <path d="M12 14h.01"></path><path d="M8 14h.01"></path>
+            <path d="M12 18h.01"></path><path d="M8 18h.01"></path>
+          </svg>
+        </div>
+        <div class="icon-label-text">Calculatrice</div>
+      </div>
+
+      <!-- Calendrier & Horloge MELA NOCE -->
+      <div class="desktop-icon-btn" onclick="openWindow('win-calendar')">
+        <div class="icon-glyph-box" style="background: linear-gradient(135deg, #ec4899, #be185d); box-shadow: 0 10px 25px rgba(236, 72, 153, 0.45);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="icon-label-text">Calendrier</div>
+      </div>
+
+      <!-- Watermark officiel -->
+      <div class="desktop-watermark-area">
+        <div class="wm-brand">MELA NOCE</div>
+        <div class="wm-credits">Conception et réalisation : Kouamelan</div>
+      </div>
+    </main>
+
+    <!-- ==================== FENÊTRES SYSTÈME ==================== -->
+
+    <!-- FENÊTRE 1 : NAVIGATEUR WEB SÉCURISÉ HTTPS (MELANET BROWSER) — OUVERTE EN PRIORITÉ -->
+    <div class="os-window open active" id="win-browser" style="top: 65px; left: calc(50% - 370px); width: 740px; height: 550px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span id="browser-tab-title">MelaNet Browser — Navigateur Web Sécurisé HTTPS</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-browser')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-browser')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-browser')"></button>
+        </div>
+      </div>
+
+      <!-- Barre d'outils du Navigateur -->
+      <div class="browser-toolbar">
+        <div class="browser-nav-row">
+          <button class="browser-btn" onclick="browserGoBack()" title="Page précédente">←</button>
+          <button class="browser-btn" onclick="browserGoForward()" title="Page suivante">→</button>
+          <button class="browser-btn" onclick="browserReload()" title="Actualiser la page">🔄</button>
+          <button class="browser-btn" onclick="browserGoHome()" title="Page d'accueil MelaNet">🏠</button>
+
+          <!-- Barre d'adresse avec cadenas SSL HTTPS -->
+          <div class="browser-address-wrap">
+            <div class="browser-ssl-badge" title="Connexion chiffrée SSL/TLS">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>HTTPS</span>
+            </div>
+            <input type="text" class="browser-address-input" id="browser-url-input" placeholder="Entrez une URL (ex: fr.wikipedia.org) ou une recherche web..." onkeydown="handleBrowserUrlKey(event)">
+            <button class="browser-btn" onclick="navigateToInputUrl()" style="width: 26px; height: 26px; border: none; background: rgba(56, 189, 248, 0.2); color: #38bdf8;" title="Accéder">➔</button>
+          </div>
+
+          <!-- Bouton de bascule Proxy / Nouvel onglet -->
+          <button class="browser-mode-toggle" id="proxy-status-btn" onclick="toggleBrowserProxyMode()" title="Bascule entre le Proxy Débloqueur MELA NOCE et l'accès direct">
+            <span>⚡ Proxy Débloqueur : ACTIF</span>
+          </button>
+          <button class="browser-btn" onclick="openInExternalTab()" title="Ouvrir dans un nouvel onglet externe du navigateur">↗</button>
+        </div>
+
+        <!-- Barre de signets rapides en 1 clic -->
+        <div class="browser-bookmarks-bar">
+          <button class="bookmark-chip" onclick="navigateTo('https://fr.wikipedia.org/wiki/Portail:Accueil')">
+            <span>📚 Wikipédia FR</span>
+          </button>
+          <button class="bookmark-chip" onclick="navigateTo('https://en.wikipedia.org/wiki/Main_Page')">
+            <span>🌍 Wikipedia World</span>
+          </button>
+          <button class="bookmark-chip" onclick="navigateTo('https://www.openstreetmap.org/export/embed.html')">
+            <span>🗺️ OpenStreetMap</span>
+          </button>
+          <button class="bookmark-chip" onclick="navigateTo('https://developer.mozilla.org/fr/')">
+            <span>💻 MDN Docs</span>
+          </button>
+          <button class="bookmark-chip" onclick="navigateTo('https://archive.org')">
+            <span>🏛️ Internet Archive</span>
+          </button>
+          <button class="bookmark-chip" onclick="navigateTo('https://example.com')">
+            <span>🧪 Page Test HTTPS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Jauge de chargement -->
+      <div class="browser-progress-track">
+        <div class="browser-progress-bar" id="browser-progress"></div>
+      </div>
+
+      <!-- Cadre d'affichage du site Web -->
+      <div class="browser-frame-container">
+        <!-- Page de démarrage MelaNet -->
+        <div class="melanet-start-screen" id="browser-start-screen">
+          <div class="melanet-logo-wrap">
+            <svg width="60" height="60" viewBox="0 0 100 100" fill="none">
+              <circle cx="50" cy="50" r="44" stroke="url(#mela_net_g)" stroke-width="4" stroke-dasharray="8 4"/>
+              <circle cx="50" cy="50" r="30" stroke="#38bdf8" stroke-width="3"/>
+              <ellipse cx="50" cy="50" rx="44" ry="16" stroke="#818cf8" stroke-width="2"/>
+              <defs>
+                <linearGradient id="mela_net_g" x1="0" y1="0" x2="100" y2="100">
+                  <stop stop-color="#38bdf8"/>
+                  <stop offset="1" stop-color="#d946ef"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="melanet-title">MelaNet Browser</div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">Navigateur Web Sécurisé HTTPS & Débloqueur Universel</div>
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">MELA NOCE • Conception et réalisation : Kouamelan</div>
+          </div>
+
+          <!-- Moteur de recherche web -->
+          <div class="melanet-search-form">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="melanet-search-input" placeholder="Rechercher sur le Web ou taper une adresse HTTPS..." onkeydown="handleMelaSearchKey(event)">
+            <button class="browser-btn" onclick="executeMelaSearch()" style="background: var(--accent-primary); color: #0b0f19; font-weight: bold; border: none; width: 34px; height: 34px; border-radius: 50%;">➔</button>
+          </div>
+
+          <!-- Tuiles de sites favoris -->
+          <div class="melanet-tiles-grid">
+            <div class="melanet-tile" onclick="navigateTo('https://fr.wikipedia.org/wiki/Portail:Accueil')">
+              <div class="tile-circle" style="background: rgba(2, 132, 199, 0.2); color: #38bdf8;">📚</div>
+              <div class="tile-text">Wikipédia</div>
+            </div>
+
+            <div class="melanet-tile" onclick="navigateTo('https://www.openstreetmap.org/export/embed.html')">
+              <div class="tile-circle" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">🗺️</div>
+              <div class="tile-text">OpenStreetMap</div>
+            </div>
+
+            <div class="melanet-tile" onclick="navigateTo('https://developer.mozilla.org/fr/')">
+              <div class="tile-circle" style="background: rgba(129, 140, 248, 0.2); color: #818cf8;">💻</div>
+              <div class="tile-text">MDN Docs</div>
+            </div>
+
+            <div class="melanet-tile" onclick="navigateTo('https://archive.org')">
+              <div class="tile-circle" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">🏛️</div>
+              <div class="tile-text">Archive.org</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- iframe de navigation -->
+        <iframe id="browser-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" src="about:blank" style="display: none;"></iframe>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 2 : ASSISTANT IA MELA NOCE -->
+    <div class="os-window" id="win-ai" style="top: 90px; left: calc(50% - 280px); width: 560px; height: 500px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>MELA NOCE IA — Assistant Intelligent & Copilote</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-ai')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-ai')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-ai')"></button>
+        </div>
+      </div>
+      <div class="win-body-scroll" style="display: flex; flex-direction: column;">
+        <div class="ai-container">
+          <div class="ai-status-bar">
+            <span>Copilote Système MELA NOCE IA [Opérationnel]</span>
+            <button onclick="clearAiChat()" style="background: transparent; border: none; color: #f5d0fe; cursor: pointer; text-decoration: underline;">Effacer</button>
+          </div>
+
+          <div class="ai-chip-suggestions">
+            <button class="ai-chip" onclick="askAiQuick('Ouvre le navigateur sur Wikipedia')">🌐 Ouvrir le Navigateur Web</button>
+            <button class="ai-chip" onclick="askAiQuick('Que peux-tu faire pour moi ?')">💡 Que peux-tu faire ?</button>
+            <button class="ai-chip" onclick="askAiQuick('Explique les commandes Linux')">🐧 Commandes Linux</button>
+            <button class="ai-chip" onclick="askAiQuick('Qui a conçu MELA NOCE ?')">✦ Auteur & Conception</button>
+          </div>
+
+          <div class="ai-chat-thread" id="ai-chat-box">
+            <div class="chat-msg assistant">
+              <div class="msg-avatar">IA</div>
+              <div class="chat-bubble">
+                <strong>Bonjour Kouamelan !</strong> Le navigateur web sécurisé HTTPS <strong>MelaNet</strong> est maintenant actif et prêt à naviguer sur internet.
+                <br><br>
+                Vous pouvez me demander d'ouvrir des sites, d'expliquer du code ou de piloter vos fenêtres !
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-input-bar">
+            <input type="text" id="ai-user-prompt" placeholder="Ex: 'Ouvre le navigateur sur Wikipedia', 'Explique chmod'..." onkeydown="handleAiKey(event)">
+            <button class="ai-send-action-btn" onclick="sendAiMessage()">Envoyer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 3 : À PROPOS -->
+    <div class="os-window" id="win-about" style="top: 100px; left: calc(50% - 260px); width: 520px; height: 460px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>À Propos de MELA NOCE</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-about')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-about')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-about')"></button>
+        </div>
+      </div>
+      <div class="win-body-scroll">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 2rem; font-weight: 900; letter-spacing: 0.18em; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MELA NOCE</div>
+          <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Système d'Exploitation Hybride Web + Linux + Android</div>
+
+          <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid var(--border-accent); border-radius: 12px; padding: 14px 18px; margin-top: 16px;">
+            <div style="font-size: 0.95rem; font-weight: 600; color: #f8fafc;">
+              Conception et réalisation : <strong style="color: #38bdf8;">Kouamelan</strong>
+            </div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">Slogan : <em>Your Device. Your Universe.</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 4 : TERMINAL IA -->
+    <div class="os-window" id="win-terminal" style="top: 130px; left: calc(50% - 280px); width: 560px; height: 380px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>Terminal MELA NOCE v1.0</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-terminal')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-terminal')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-terminal')"></button>
+        </div>
+      </div>
+      <div class="win-body-scroll" style="background: #050811; font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.6;">
+        <div id="term-display" style="color: #cbd5e1; white-space: pre-wrap;">Bienvenue dans le terminal MELA NOCE.
+Architecture : Hybride (Windows 11 / Linux IA)
+Signature officielle : Conception et réalisation : Kouamelan
+Tapez « help » pour la liste des commandes.</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+          <span style="color: var(--accent-emerald); font-weight: bold;" id="term-user-tag">kouamelan@melanoce:~$</span>
+          <input type="text" id="term-input" style="flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-family: inherit; font-size: inherit;" onkeydown="handleTerminalKey(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 5 : PARAMÈTRES -->
+    <div class="os-window" id="win-settings" style="top: 110px; left: calc(50% - 240px); width: 480px; height: 380px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Paramètres Système</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-settings')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-settings')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-settings')"></button>
+        </div>
+      </div>
+      <div class="win-body-scroll">
+        <div style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Configuration MELA NOCE</div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+          <div style="font-size: 0.88rem; font-weight: 600;">Signature Officielle</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">Conception et réalisation : Kouamelan</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+          <div style="font-size: 0.88rem; font-weight: 600; margin-bottom: 8px;">Moteur de Navigation Web</div>
+          <div style="font-size: 0.78rem; color: #34d399;">● Proxy Débloqueur HTTPS Actif sur port 3000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 6 : EXPLORATEUR DE FICHIERS MELAFILES -->
+    <div class="os-window" id="win-files" style="top: 80px; left: calc(50% - 340px); width: 680px; height: 460px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>MelaFiles — Explorateur de Fichiers</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-files')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-files')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-files')"></button>
+        </div>
+      </div>
+      <div class="files-container">
+        <!-- Barre d'actions -->
+        <div class="files-toolbar">
+          <button class="files-btn primary" onclick="createNewFilePrompt()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Nouveau fichier
+          </button>
+          <button class="files-btn" onclick="openFileInEditor()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Éditer
+          </button>
+          <button class="files-btn" onclick="downloadSelectedFile()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Télécharger
+          </button>
+          <button class="files-btn danger" onclick="deleteSelectedFile()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Supprimer
+          </button>
+          <button class="files-btn" onclick="loadFilesList()" style="margin-left: auto;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Actualiser
+          </button>
+        </div>
+
+        <!-- Zone des fichiers -->
+        <div class="files-view" id="files-view-container">
+          <!-- Injecté dynamiquement par loadFilesList() -->
+        </div>
+
+        <!-- Pied de page statut -->
+        <div class="files-statusbar">
+          <span id="files-status-text">Chargement des fichiers...</span>
+          <span style="color: #64748b;">Dossier : /melanoce_fs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 7 : ÉDITEUR DE TEXTE MELAEDIT -->
+    <div class="os-window" id="win-editor" style="top: 100px; left: calc(50% - 300px); width: 620px; height: 480px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span id="editor-win-title">MelaEdit — Bloc-Notes</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-editor')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-editor')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-editor')"></button>
+        </div>
+      </div>
+      <div class="editor-container">
+        <!-- Barre d'outils -->
+        <div class="editor-toolbar">
+          <input type="text" id="editor-filename" class="editor-filename-input" value="nouvelle_note.txt" placeholder="nom_fichier.txt">
+          <button class="files-btn primary" onclick="saveCurrentEditorFile()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Enregistrer
+          </button>
+          <button class="files-btn" onclick="newEditorFile()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Nouveau
+          </button>
+          <button class="files-btn" onclick="downloadCurrentFile()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Télécharger
+          </button>
+          <span id="editor-status" style="margin-left: auto; font-size: 0.74rem; color: #10b981; font-weight: 500;">✓ Prêt</span>
+        </div>
+
+        <!-- Zone de saisie texte -->
+        <textarea id="editor-content" class="editor-textarea" placeholder="Commencez à écrire votre texte, note, script ou code ici..." oninput="updateEditorStats()"></textarea>
+
+        <!-- Pied de page éditeur -->
+        <div class="editor-statusbar">
+          <span id="editor-stats-text">0 ligne | 0 mot | 0 caractère</span>
+          <span style="color: #64748b;">MELA NOCE FS • UTF-8</span>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- FENÊTRE 8 : CALCULATRICE SCIENTIFIQUE -->
+    <div class="os-window" id="win-calculator" style="top: 95px; left: calc(50% - 190px); width: 380px; height: 510px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line>
+          </svg>
+          <span>Calculatrice Scientifique — MELA NOCE</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-calculator')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-calculator')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-calculator')"></button>
+        </div>
+      </div>
+      <div class="calc-container">
+        <div class="calc-screen">
+          <div class="calc-expr" id="calc-expression">&nbsp;</div>
+          <div class="calc-result" id="calc-result">0</div>
+        </div>
+        <div class="calc-toolbar">
+          <span style="color: #94a3b8;">Mode : Scientifique</span>
+          <button class="calc-mode-btn" id="calc-angle-mode" onclick="toggleAngleMode()">DEG</button>
+        </div>
+        <div class="calc-grid">
+          <button class="calc-btn func" onclick="calcAction('sin')">sin</button>
+          <button class="calc-btn func" onclick="calcAction('cos')">cos</button>
+          <button class="calc-btn func" onclick="calcAction('tan')">tan</button>
+          <button class="calc-btn func" onclick="calcAction('pi')">π</button>
+          <button class="calc-btn clear" onclick="calcAction('clear')">C</button>
+
+          <button class="calc-btn func" onclick="calcAction('sqrt')">√</button>
+          <button class="calc-btn func" onclick="calcAction('sq')">x²</button>
+          <button class="calc-btn func" onclick="calcAction('ln')">ln</button>
+          <button class="calc-btn func" onclick="calcAction('log')">log</button>
+          <button class="calc-btn op" onclick="calcAction('/')">÷</button>
+
+          <button class="calc-btn" onclick="calcAction('7')">7</button>
+          <button class="calc-btn" onclick="calcAction('8')">8</button>
+          <button class="calc-btn" onclick="calcAction('9')">9</button>
+          <button class="calc-btn op" onclick="calcAction('(')">(</button>
+          <button class="calc-btn op" onclick="calcAction('*')">×</button>
+
+          <button class="calc-btn" onclick="calcAction('4')">4</button>
+          <button class="calc-btn" onclick="calcAction('5')">5</button>
+          <button class="calc-btn" onclick="calcAction('6')">6</button>
+          <button class="calc-btn op" onclick="calcAction(')')">)</button>
+          <button class="calc-btn op" onclick="calcAction('-')">−</button>
+
+          <button class="calc-btn" onclick="calcAction('1')">1</button>
+          <button class="calc-btn" onclick="calcAction('2')">2</button>
+          <button class="calc-btn" onclick="calcAction('3')">3</button>
+          <button class="calc-btn op" onclick="calcAction('%')">%</button>
+          <button class="calc-btn op" onclick="calcAction('+')">+</button>
+
+          <button class="calc-btn" onclick="calcAction('0')">0</button>
+          <button class="calc-btn" onclick="calcAction('.')">.</button>
+          <button class="calc-btn" onclick="calcAction('plusminus')">±</button>
+          <button class="calc-btn" onclick="calcAction('backspace')">⌫</button>
+          <button class="calc-btn equal" onclick="calcAction('equals')">=</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FENÊTRE 9 : CALENDRIER & HORLOGE MONDIALE -->
+    <div class="os-window" id="win-calendar" style="top: 85px; left: calc(50% - 270px); width: 540px; height: 500px;" onclick="bringToFront(this)">
+      <div class="win-header-bar">
+        <div class="win-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
+          <span>Calendrier & Horloge Mondiale — MELA NOCE</span>
+        </div>
+        <div class="win-ctrl-buttons">
+          <button class="win-ctrl-btn minimize" onclick="minimizeWindow('win-calendar')"></button>
+          <button class="win-ctrl-btn maximize" onclick="toggleMaximize('win-calendar')"></button>
+          <button class="win-ctrl-btn close" onclick="closeWindow('win-calendar')"></button>
+        </div>
+      </div>
+      <div class="cal-container">
+        <div class="cal-tabs-nav">
+          <button class="cal-tab-btn active" onclick="switchCalTab('tab-cal-month')">📅 Calendrier</button>
+          <button class="cal-tab-btn" onclick="switchCalTab('tab-cal-world')">🌍 Horloge Mondiale</button>
+          <button class="cal-tab-btn" onclick="switchCalTab('tab-cal-chrono')">⏱ Chronomètre</button>
+        </div>
+
+        <!-- Onglet 1 : Calendrier interactif & Agenda -->
+        <div class="cal-tab-content active" id="tab-cal-month">
+          <div class="cal-header-row">
+            <button class="cal-nav-btn" onclick="changeCalMonth(-1)">❮</button>
+            <div class="cal-month-title" id="cal-month-label">Novembre 2026</div>
+            <button class="cal-nav-btn" onclick="changeCalMonth(1)">❯</button>
+          </div>
+          <div class="cal-grid-table">
+            <div class="cal-week-day">Lun</div><div class="cal-week-day">Mar</div><div class="cal-week-day">Mer</div>
+            <div class="cal-week-day">Jeu</div><div class="cal-week-day">Ven</div><div class="cal-week-day">Sam</div><div class="cal-week-day">Dim</div>
+          </div>
+          <div class="cal-grid-table" id="cal-days-container" style="margin-top: 4px;"></div>
+          <div class="cal-notes-box">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;" id="cal-selected-date-label">Notes du jour</div>
+            <input type="text" id="cal-day-note-input" placeholder="Ajouter une note pour cette date..." style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.8rem; box-sizing: border-box;" onchange="saveDayNote()">
+          </div>
+        </div>
+
+        <!-- Onglet 2 : Horloge Mondiale -->
+        <div class="cal-tab-content" id="tab-cal-world">
+          <div class="world-clock-grid">
+            <div class="world-clock-card">
+              <div class="world-clock-city">Abidjan 🇨🇮</div>
+              <div class="world-clock-tz">Heure de référence locale (GMT / UTC+0)</div>
+              <div class="world-clock-time" id="clock-abidjan">--:--:--</div>
+            </div>
+            <div class="world-clock-card">
+              <div class="world-clock-city">Paris 🇫🇷</div>
+              <div class="world-clock-tz">Europe centrale (UTC+1)</div>
+              <div class="world-clock-time" id="clock-paris">--:--:--</div>
+            </div>
+            <div class="world-clock-card">
+              <div class="world-clock-city">New York 🇺🇸</div>
+              <div class="world-clock-tz">Heure de l'Est (UTC-5)</div>
+              <div class="world-clock-time" id="clock-ny">--:--:--</div>
+            </div>
+            <div class="world-clock-card">
+              <div class="world-clock-city">Tokyo 🇯🇵</div>
+              <div class="world-clock-tz">Heure standard du Japon (UTC+9)</div>
+              <div class="world-clock-time" id="clock-tokyo">--:--:--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet 3 : Chronomètre -->
+        <div class="cal-tab-content" id="tab-cal-chrono">
+          <div class="stopwatch-box">
+            <div class="stopwatch-display" id="chrono-display">00:00.00</div>
+            <div class="stopwatch-ctrls">
+              <button class="files-btn primary" id="chrono-start-btn" onclick="toggleChrono()">Démarrer</button>
+              <button class="files-btn" onclick="resetChrono()">Réinitialiser</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MENU DÉMARRER ==================== -->
+    <div id="start-menu">
+      <div class="start-search-box">
+        <div class="search-input-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Rechercher dans MELA NOCE...">
+        </div>
+      </div>
+
+      <div class="start-grid-scroll">
+        <div class="start-section-lbl">Applications Épinglées</div>
+        <div class="start-apps-layout">
+          <div class="start-app-tile" onclick="openWindow('win-browser'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #0284c7, #06b6d4);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Navigateur Web</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-files'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Fichiers</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-editor'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #10b981, #059669);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Bloc-Notes</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-ai'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #d946ef, #8b5cf6);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Assistant IA</div>
+          </div>
+
+          
+          <div class="start-app-tile" onclick="openWindow('win-calculator'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line>
+                <path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Calculatrice</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-calendar'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Calendrier</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-about'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">À Propos</div>
+          </div>
+
+          <div class="start-app-tile" onclick="openWindow('win-terminal'); toggleStartMenu();">
+            <div class="tile-glyph-shape" style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border: 1px solid var(--border-accent);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+            </div>
+            <div class="tile-name-lbl">Terminal IA</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="start-user-footer">
+        <div class="user-info-row">
+          <div class="user-avatar-tag">K</div>
+          <div>
+            <div class="user-name-title">Kouamelan</div>
+            <div class="user-signature-sub">Conception et réalisation : Kouamelan</div>
+          </div>
+        </div>
+
+        <button onclick="toggleStartMenu()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 0.76rem; cursor: pointer;">Fermer</button>
+      </div>
+    </div>
+
+    <!-- ==================== BARRE DES TÂCHES ==================== -->
+    <footer id="taskbar">
+      <div class="taskbar-left-zone">
+        <button class="start-menu-button" onclick="toggleStartMenu()" title="Démarrer MELA NOCE">
+          <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="5" stroke-dasharray="8 4"/>
+            <path d="M30 68V32L50 50L70 32V68" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="taskbar-center-apps">
+        <!-- Raccourci Navigateur Web -->
+        <button class="app-dock-icon active" id="dock-browser" onclick="toggleMinimize('win-browser')" title="Navigateur Web MelaNet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </button>
+
+        <!-- Raccourci Fichiers -->
+        <button class="app-dock-icon" id="dock-files" onclick="toggleMinimize('win-files')" title="Explorateur de Fichiers">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+
+        <!-- Raccourci Bloc-Notes -->
+        <button class="app-dock-icon" id="dock-editor" onclick="toggleMinimize('win-editor')" title="Bloc-Notes MelaEdit">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </button>
+
+        <!-- Raccourci Assistant IA -->
+        <button class="app-dock-icon" id="dock-ai" onclick="toggleMinimize('win-ai')" title="Assistant IA">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
+
+        
+        <!-- Raccourci Calculatrice -->
+        <button class="app-dock-icon" id="dock-calculator" onclick="toggleMinimize('win-calculator')" title="Calculatrice Scientifique">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line>
+            <path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path>
+          </svg>
+        </button>
+
+        <!-- Raccourci Calendrier -->
+        <button class="app-dock-icon" id="dock-calendar" onclick="toggleMinimize('win-calendar')" title="Calendrier & Horloge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
+        </button>
+
+        <!-- Raccourci À Propos -->
+        <button class="app-dock-icon" id="dock-about" onclick="toggleMinimize('win-about')" title="À Propos">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+
+        <!-- Raccourci Terminal -->
+        <button class="app-dock-icon" id="dock-terminal" onclick="toggleMinimize('win-terminal')" title="Terminal IA">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="taskbar-right-zone">
+        <div class="systray-pill" onclick="openWindow('win-calendar')" title="Ouvrir le Calendrier et l'Horloge mondiale">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+          <div class="systray-clock" id="taskbar-time">12:00</div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== LOGIQUE COMPLÈTE DU NAVIGATEUR ET DE L'OS ==================== -->
+  <script>
+    // --- Horloge dynamique ---
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${h}:${m}`;
+      const tEl = document.getElementById('taskbar-time');
+      const lEl = document.getElementById('linux-top-clock');
+      if (tEl) tEl.innerText = timeStr;
+      if (lEl) lEl.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- Bascule Windows 11 / Linux IA ---
+    function switchOsMode(mode) {
+      const body = document.body;
+      const btnWin = document.getElementById('btn-win11');
+      const btnLin = document.getElementById('btn-linux');
+      const userTag = document.getElementById('term-user-tag');
+
+      if (mode === 'win11') {
+        body.classList.remove('os-mode-linux');
+        body.classList.add('os-mode-win11');
+        btnWin.classList.add('active');
+        btnLin.classList.remove('active');
+        if (userTag) userTag.innerText = 'kouamelan@melanoce-win11:~$';
+      } else {
+        body.classList.remove('os-mode-win11');
+        body.classList.add('os-mode-linux');
+        btnLin.classList.add('active');
+        btnWin.classList.remove('active');
+        if (userTag) userTag.innerText = 'kouamelan@melanoce-linux-ai:~$';
+      }
+    }
+
+    // --- Mode Pocket PC ---
+    let isPhoneMode = false;
+    function toggleDeviceSimulation() {
+      isPhoneMode = !isPhoneMode;
+      const body = document.body;
+      const lbl = document.getElementById('device-lbl');
+
+      if (isPhoneMode) {
+        body.classList.add('device-phone');
+        lbl.innerText = "Mode Ordinateur de Bureau";
+      } else {
+        body.classList.remove('device-phone');
+        lbl.innerText = "Mode Téléphone Android (Pocket PC)";
+      }
+    }
+
+    // --- Gestionnaire de Fenêtres ---
+    let zIndexCounter = 300;
+
+    function bringToFront(win) {
+      zIndexCounter++;
+      win.style.zIndex = zIndexCounter;
+      document.querySelectorAll('.os-window').forEach(w => w.classList.remove('active'));
+      win.classList.add('active');
+    }
+
+    function openWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.remove('minimized');
+      win.classList.add('open');
+      bringToFront(win);
+      updateDockState(id, true);
+      if (id === 'win-files') {
+        loadFilesList();
+      } else if (id === 'win-calendar') {
+        renderCalendar();
+        updateWorldClocks();
+      }
+    }
+
+    function closeWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.remove('open', 'maximized');
+      updateDockState(id, false);
+    }
+
+    function minimizeWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.add('minimized');
+      updateDockState(id, false);
+    }
+
+    function toggleMinimize(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      if (!win.classList.contains('open')) {
+        openWindow(id);
+      } else if (win.classList.contains('minimized')) {
+        win.classList.remove('minimized');
+        bringToFront(win);
+        updateDockState(id, true);
+      } else {
+        if (win.classList.contains('active')) {
+          minimizeWindow(id);
+        } else {
+          bringToFront(win);
+        }
+      }
+    }
+
+    function toggleMaximize(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.toggle('maximized');
+    }
+
+    function updateDockState(winId, active) {
+      const map = {
+        'win-browser': 'dock-browser',
+        'win-files': 'dock-files',
+        'win-editor': 'dock-editor',
+        'win-ai': 'dock-ai',
+        'win-about': 'dock-about',
+        'win-terminal': 'dock-terminal',
+        'win-settings': 'dock-settings',
+        'win-calculator': 'dock-calculator',
+        'win-calendar': 'dock-calendar'
+      };
+      const btn = document.getElementById(map[winId]);
+      if (btn) {
+        if (active) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+    }
+
+    // Initialisation du drag-and-drop pour toute fenêtre
+    function setupWindowDrag(win) {
+      const header = win.querySelector('.win-header-bar');
+      if (!header || header.dataset.dragInitialized) return;
+      header.dataset.dragInitialized = 'true';
+
+      let isDragging = false;
+      let startX, startY, initL, initT;
+
+      header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('win-ctrl-btn')) return;
+        bringToFront(win);
+        if (win.classList.contains('maximized') || isPhoneMode) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = win.getBoundingClientRect();
+        initL = rect.left;
+        initT = rect.top;
+
+        function onMouseMove(ev) {
+          if (!isDragging) return;
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          win.style.left = (initL + dx) + 'px';
+          win.style.top = Math.max(10, initT + dy) + 'px';
+        }
+
+        function onMouseUp() {
+          isDragging = false;
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    }
+
+    function initAllWindowsDrag() {
+      document.querySelectorAll('.os-window').forEach(win => setupWindowDrag(win));
+    }
+
+    // Drag-and-drop initial des fenêtres
+    document.querySelectorAll('.os-window').forEach(win => {
+      const header = win.querySelector('.win-header-bar');
+      let isDragging = false;
+      let startX, startY, initL, initT;
+
+      header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('win-ctrl-btn')) return;
+        bringToFront(win);
+        if (win.classList.contains('maximized') || isPhoneMode) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = win.getBoundingClientRect();
+        initL = rect.left;
+        initT = rect.top;
+
+        function onMouseMove(ev) {
+          if (!isDragging) return;
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          win.style.left = (initL + dx) + 'px';
+          win.style.top = Math.max(10, initT + dy) + 'px';
+        }
+
+        function onMouseUp() {
+          isDragging = false;
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    });
+
+    // --- Menu Démarrer ---
+    function toggleStartMenu() {
+      const menu = document.getElementById('start-menu');
+      menu.classList.toggle('open');
+    }
+
+    function handleDesktopClick(e) {
+      const menu = document.getElementById('start-menu');
+      if (menu && menu.classList.contains('open')) {
+        menu.classList.remove('open');
+      }
+    }
+
+    // ==========================================================================
+    // MOTEUR DU NAVIGATEUR WEB SÉCURISÉ HTTPS (MELANET)
+    // ==========================================================================
+    let browserHistory = [];
+    let currentHistoryIdx = -1;
+    let useProxyMode = true; // Actif par défaut pour débloquer tous les sites
+
+    function toggleBrowserProxyMode() {
+      useProxyMode = !useProxyMode;
+      const btn = document.getElementById('proxy-status-btn');
+      if (useProxyMode) {
+        btn.innerHTML = '<span>⚡ Proxy Débloqueur : ACTIF</span>';
+        btn.style.borderColor = 'rgba(217, 70, 239, 0.4)';
+        btn.style.color = '#f5d0fe';
+      } else {
+        btn.innerHTML = '<span>🌐 Accès Direct Iframe</span>';
+        btn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+        btn.style.color = '#38bdf8';
+      }
+
+      // Recharger la page actuelle avec le nouveau mode
+      if (currentHistoryIdx >= 0 && browserHistory[currentHistoryIdx]) {
+        loadPage(browserHistory[currentHistoryIdx]);
+      }
+    }
+
+    function navigateToInputUrl() {
+      const input = document.getElementById('browser-url-input');
+      let val = input.value.trim();
+      if (!val) return;
+
+      // Si l'utilisateur tape un terme de recherche plutôt qu'une URL
+      if (!val.includes('.') && !val.includes('://')) {
+        val = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(val);
+      } else if (!val.startsWith('http://') && !val.startsWith('https://')) {
+        val = 'https://' + val;
+      }
+
+      navigateTo(val);
+    }
+
+    function handleBrowserUrlKey(e) {
+      if (e.key === 'Enter') {
+        navigateToInputUrl();
+      }
+    }
+
+    function handleMelaSearchKey(e) {
+      if (e.key === 'Enter') {
+        executeMelaSearch();
+      }
+    }
+
+    function executeMelaSearch() {
+      const input = document.getElementById('melanet-search-input');
+      const q = input.value.trim();
+      if (!q) return;
+
+      let targetUrl = '';
+      if (q.includes('.') && !q.includes(' ')) {
+        targetUrl = q.startsWith('http') ? q : 'https://' + q;
+      } else {
+        targetUrl = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(q);
+      }
+      navigateTo(targetUrl);
+    }
+
+    function navigateTo(targetUrl) {
+      // Nettoyer l'URL
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl;
+      }
+
+      // Ajouter à l'historique
+      if (currentHistoryIdx === -1 || browserHistory[currentHistoryIdx] !== targetUrl) {
+        browserHistory = browserHistory.slice(0, currentHistoryIdx + 1);
+        browserHistory.push(targetUrl);
+        currentHistoryIdx = browserHistory.length - 1;
+      }
+
+      loadPage(targetUrl);
+    }
+
+    function loadPage(targetUrl) {
+      const input = document.getElementById('browser-url-input');
+      const startScreen = document.getElementById('browser-start-screen');
+      const iframe = document.getElementById('browser-iframe');
+      const titleSpan = document.getElementById('browser-tab-title');
+      const progress = document.getElementById('browser-progress');
+
+      input.value = targetUrl;
+      titleSpan.innerText = 'Chargement : ' + targetUrl;
+
+      // Animation de la jauge de progression
+      progress.style.opacity = '1';
+      progress.style.width = '30%';
+
+      setTimeout(() => { progress.style.width = '70%'; }, 200);
+
+      startScreen.style.display = 'none';
+      iframe.style.display = 'block';
+
+      // Déterminer la source : Proxy local ou Direct
+      let effectiveSrc = targetUrl;
+      if (useProxyMode) {
+        effectiveSrc = '/api/proxy?url=' + encodeURIComponent(targetUrl);
+      }
+
+      iframe.src = effectiveSrc;
+
+      iframe.onload = () => {
+        progress.style.width = '100%';
+        setTimeout(() => {
+          progress.style.opacity = '0';
+          progress.style.width = '0%';
+        }, 300);
+
+        try {
+          const docTitle = iframe.contentDocument ? iframe.contentDocument.title : '';
+          titleSpan.innerText = (docTitle || targetUrl) + ' — MelaNet Browser';
+        } catch (e) {
+          titleSpan.innerText = targetUrl + ' — MelaNet Browser';
+        }
+      };
+
+      iframe.onerror = () => {
+        progress.style.opacity = '0';
+        titleSpan.innerText = 'Erreur — ' + targetUrl;
+      };
+    }
+
+    // Écoute des navigations et titres en temps réel provenant du proxy MELA NOCE
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'MELANET_NAVIGATE') {
+        const input = document.getElementById('browser-url-input');
+        const titleSpan = document.getElementById('browser-tab-title');
+        if (input && event.data.url) {
+          input.value = event.data.url;
+          if (browserHistory[currentHistoryIdx] !== event.data.url) {
+            browserHistory.push(event.data.url);
+            currentHistoryIdx = browserHistory.length - 1;
+          }
+        }
+        if (titleSpan && event.data.title) {
+          titleSpan.innerText = event.data.title + ' — MelaNet Browser';
+        }
+      }
+    });
+
+    function browserGoHome() {
+      const startScreen = document.getElementById('browser-start-screen');
+      const iframe = document.getElementById('browser-iframe');
+      const input = document.getElementById('browser-url-input');
+      const titleSpan = document.getElementById('browser-tab-title');
+
+      iframe.src = 'about:blank';
+      iframe.style.display = 'none';
+      startScreen.style.display = 'flex';
+      input.value = '';
+      titleSpan.innerText = 'MelaNet Browser — Page de démarrage';
+    }
+
+    function browserGoBack() {
+      if (currentHistoryIdx > 0) {
+        currentHistoryIdx--;
+        loadPage(browserHistory[currentHistoryIdx]);
+      } else {
+        browserGoHome();
+      }
+    }
+
+    function browserGoForward() {
+      if (currentHistoryIdx < browserHistory.length - 1) {
+        currentHistoryIdx++;
+        loadPage(browserHistory[currentHistoryIdx]);
+      }
+    }
+
+    function browserReload() {
+      if (currentHistoryIdx >= 0 && browserHistory[currentHistoryIdx]) {
+        loadPage(browserHistory[currentHistoryIdx]);
+      } else {
+        browserGoHome();
+      }
+    }
+
+    function openInExternalTab() {
+      const input = document.getElementById('browser-url-input');
+      const val = input.value.trim();
+      if (val) {
+        window.open(val, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open('https://fr.wikipedia.org', '_blank', 'noopener,noreferrer');
+      }
+    }
+
+    // ==========================================================================
+    // MOTEUR DE L'ASSISTANT IA MELA NOCE
+    // ==========================================================================
+    function askAiQuick(prompt) {
+      const input = document.getElementById('ai-user-prompt');
+      if (input) {
+        input.value = prompt;
+        sendAiMessage();
+      }
+    }
+
+    function clearAiChat() {
+      const box = document.getElementById('ai-chat-box');
+      box.innerHTML = `
+        <div class="chat-msg assistant">
+          <div class="msg-avatar">IA</div>
+          <div class="chat-bubble">Historique réinitialisé. En quoi puis-je vous aider, Kouamelan ?</div>
+        </div>
+      `;
+    }
+
+    function sendAiMessage() {
+      const input = document.getElementById('ai-user-prompt');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const box = document.getElementById('ai-chat-box');
+      box.innerHTML += `
+        <div class="chat-msg user">
+          <div class="msg-avatar">K</div>
+          <div class="chat-bubble">${escapeHtml(text)}</div>
+        </div>
+      `;
+
+      setTimeout(async () => {
+        const lower = text.toLowerCase();
+        let reply = "";
+
+        if (lower.includes("fichier") || lower.includes("creer") || lower.includes("créer") || lower.includes("note") || lower.includes("texte") || lower.includes("document") || lower.includes("dossier")) {
+          // Si l'utilisateur demande explicitement de créer un fichier
+          if (lower.includes("crée") || lower.includes("cree") || lower.includes("enregistre") || lower.includes("écris") || lower.includes("ecris")) {
+            const defaultName = "note_ia_" + Date.now().toString().slice(-4) + ".txt";
+            const fileContent = "Fichier généré par l'Assistant IA MELA NOCE.\nSignature : Conception et réalisation : Kouamelan\nContenu : " + text;
+            try {
+              await fetch('/api/files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: defaultName, content: fileContent })
+              });
+              loadFilesList();
+              openFileInEditor(defaultName);
+              reply = `✅ <strong>Oui, absolument !</strong> Vous pouvez créer et gérer vos fichiers directement dans MELA NOCE.<br>J'ai créé pour vous le fichier <code>${defaultName}</code> et je l'ai ouvert dans l'éditeur <strong>MelaEdit</strong> !`;
+            } catch(e) {
+              reply = "Oui ! Vous pouvez créer des fichiers avec l'application <strong>Fichiers</strong> (MelaFiles) ou le <strong>Bloc-Notes</strong> (MelaEdit).";
+            }
+          } else {
+            openWindow('win-files');
+            reply = "<strong>Oui, vous pouvez créer et éditer des fichiers !</strong><br>• Utilisez <strong>MelaFiles (Explorateur de fichiers)</strong> pour parcourir, créer et supprimer vos documents.<br>• Utilisez <strong>MelaEdit (Bloc-Notes)</strong> pour rédiger des textes, du Markdown ou du code.<br>• Ou utilisez le <strong>Terminal</strong> avec les commandes <code>touch</code>, <code>cat</code>, <code>echo</code>, <code>edit</code> et <code>ls</code>.";
+          }
+        } else if (lower.includes("navigateur") || lower.includes("internet") || lower.includes("web") || lower.includes("https") || lower.includes("site") || lower.includes("wikipedia")) {
+          openWindow('win-browser');
+          if (lower.includes("wikipedia")) {
+            navigateTo('https://fr.wikipedia.org/wiki/Portail:Accueil');
+            reply = "J'ai ouvert le <strong>Navigateur Web MelaNet HTTPS</strong> directement sur Wikipédia.";
+          } else {
+            reply = "J'ai ouvert le <strong>Navigateur Web MelaNet HTTPS</strong>. Vous pouvez naviguer sur n'importe quel site ou taper une recherche web !";
+          }
+        } else if (lower.includes("qui") || lower.includes("auteur") || lower.includes("concepteur") || lower.includes("kouamelan")) {
+          reply = "Le système officiel <strong>MELA NOCE</strong> est dirigé sous la signature officielle : <strong>« Conception et réalisation : Kouamelan »</strong> (<em>Your Device. Your Universe.</em>).";
+        } else if (lower.includes("linux")) {
+          switchOsMode('linux');
+          reply = "Environnement basculé sur <strong>Linux IA Workstation</strong>.";
+        } else if (lower.includes("windows")) {
+          switchOsMode('win11');
+          reply = "Environnement basculé sur <strong>Windows 11 Fluent</strong>.";
+        } else {
+          reply = `Instruction reçue pour MELA NOCE. En tant que copilote, je peux créer des fichiers, piloter le navigateur HTTPS, le terminal ou vos paramètres. Tapez par exemple <em>« Crée un fichier de notes »</em> ou <em>« Ouvre mes fichiers »</em> !`;
+        }
+
+        box.innerHTML += `
+          <div class="chat-msg assistant">
+            <div class="msg-avatar">IA</div>
+            <div class="chat-bubble">${reply}</div>
+          </div>
+        `;
+        box.scrollTop = box.scrollHeight;
+      }, 350);
+    }
+
+    function handleAiKey(e) {
+      if (e.key === 'Enter') sendAiMessage();
+    }
+
+    // ==========================================================================
+    // GESTION DU SYSTÈME DE FICHIERS MELA NOCE (MelaFiles & MelaEdit)
+    // ==========================================================================
+    let currentFilesList = [];
+    let selectedFileName = null;
+
+    
+    // ==========================================================================
+    // MOTEUR DE PERSISTANCE HYBRIDE (MelaStorage) — LOCAL + CLOUD + OFFLINE
+    // ==========================================================================
+    const MelaStorage = {
+      isServerOnline: false,
+      prefix: 'melanoce_fs_',
+      indexKey: 'melanoce_file_index',
+
+      async checkServer() {
+        try {
+          const res = await fetch('/api/files', { method: 'GET', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+          if (res.ok) {
+            this.isServerOnline = true;
+          }
+        } catch(e) {
+          this.isServerOnline = false;
+        }
+      },
+
+      seedDefaultFiles() {
+        if (!localStorage.getItem(this.indexKey)) {
+          const defaults = [
+            {
+              name: 'bienvenue.txt',
+              content: 'Bienvenue dans MELA NOCE v1.0 !\nSlogan : Your Device. Your Universe.\nConception et réalisation : Kouamelan\n\nMELA NOCE est votre environnement informatique personnel multiplateforme :\n- Bureau virtuel multitâche (Windows 11 & Linux IA)\n- Navigateur Web HTTPS débloqueur (MelaNet)\n- Explorateur de fichiers persistant (MelaFiles)\n- Bloc-notes & éditeur de code (MelaEdit)\n- Terminal de commandes interactif\n- Assistant IA\n- Calculatrice scientifique & Calendrier/Horloge mondiale'
+            },
+            {
+              name: 'projet_mela.md',
+              content: '# MELA NOCE — Spécifications Techniques\n\n- **Auteur & Concepteur :** Kouamelan\n- **Version :** 1.0.0 Stable\n- **Plateformes :** Web Desktop, Linux Container, Android PWA Pocket PC\n- **Signature Officielle :** Conception et réalisation : Kouamelan\n- **Sécurité :** Chiffrement HTTPS, bac à sable iframe, stockage résilient hybride.'
+            },
+            {
+              name: 'guide_astuces.txt',
+              content: 'Astuces MELA NOCE :\n1. Cliquez sur l\'horloge en bas à droite pour ouvrir le Calendrier et l\'Horloge mondiale.\n2. Lancez la Calculatrice scientifique depuis le bureau ou le terminal (tapez "calc").\n3. Double-cliquez sur n\'importe quel fichier dans MelaFiles pour l\'ouvrir dans le Bloc-notes.\n4. Utilisez l\'Assistant IA pour créer automatiquement des documents et ouvrir vos applications.'
+            }
+          ];
+          const index = defaults.map(d => ({
+            name: d.name,
+            size: new Blob([d.content]).size,
+            type: d.name.split('.').pop() || 'txt',
+            mtime: new Date().toISOString()
+          }));
+          localStorage.setItem(this.indexKey, JSON.stringify(index));
+          defaults.forEach(d => {
+            localStorage.setItem(this.prefix + d.name, d.content);
+          });
+        }
+      },
+
+      async listFiles() {
+        await this.checkServer();
+        if (this.isServerOnline) {
+          try {
+            const res = await fetch('/api/files');
+            if (res.ok) {
+              const data = await res.json();
+              if (data && Array.isArray(data.files) && data.files.length > 0) {
+                return data.files;
+              }
+            }
+          } catch(e) {
+            this.isServerOnline = false;
+          }
+        }
+        this.seedDefaultFiles();
+        try {
+          return JSON.parse(localStorage.getItem(this.indexKey) || '[]');
+        } catch(e) {
+          return [];
+        }
+      },
+
+      async readFile(name) {
+        if (this.isServerOnline) {
+          try {
+            const res = await fetch('/api/files/read?name=' + encodeURIComponent(name));
+            if (res.ok) {
+              const data = await res.json();
+              if (data.content !== undefined) return data.content;
+            }
+          } catch(e) {
+            this.isServerOnline = false;
+          }
+        }
+        const val = localStorage.getItem(this.prefix + name);
+        if (val !== null) return val;
+        throw new Error('Fichier introuvable');
+      },
+
+      async saveFile(name, content) {
+        const cleanName = (name || 'sans_titre.txt').trim();
+        const size = new Blob([content]).size;
+
+        try {
+          let idx = JSON.parse(localStorage.getItem(this.indexKey) || '[]');
+          const existing = idx.find(f => f.name === cleanName);
+          if (existing) {
+            existing.size = size;
+            existing.mtime = new Date().toISOString();
+          } else {
+            idx.push({
+              name: cleanName,
+              size,
+              type: cleanName.split('.').pop() || 'txt',
+              mtime: new Date().toISOString()
+            });
+          }
+          localStorage.setItem(this.indexKey, JSON.stringify(idx));
+          localStorage.setItem(this.prefix + cleanName, content);
+        } catch(e) {}
+
+        if (this.isServerOnline) {
+          try {
+            await fetch('/api/files', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: cleanName, content })
+            });
+          } catch(e) {}
+        }
+        return { success: true, name: cleanName, size };
+      },
+
+      async deleteFile(name) {
+        try {
+          let idx = JSON.parse(localStorage.getItem(this.indexKey) || '[]');
+          idx = idx.filter(f => f.name !== name);
+          localStorage.setItem(this.indexKey, JSON.stringify(idx));
+          localStorage.removeItem(this.prefix + name);
+        } catch(e) {}
+
+        if (this.isServerOnline) {
+          try {
+            await fetch('/api/files?name=' + encodeURIComponent(name), { method: 'DELETE' });
+          } catch(e) {}
+        }
+        return { success: true, name };
+      }
+    };
+
+    // ==========================================================================
+    // MOTEUR CALCULATRICE SCIENTIFIQUE (MelaCalc)
+    // ==========================================================================
+    let calcCurrent = '0';
+    let calcExpression = '';
+    let calcAngleMode = 'DEG'; // DEG ou RAD
+    let calcLastResult = null;
+
+    function updateCalcScreen() {
+      const resEl = document.getElementById('calc-result');
+      const exprEl = document.getElementById('calc-expression');
+      if (resEl) resEl.textContent = calcCurrent;
+      if (exprEl) exprEl.innerHTML = calcExpression || '&nbsp;';
+    }
+
+    function toggleAngleMode() {
+      calcAngleMode = calcAngleMode === 'DEG' ? 'RAD' : 'DEG';
+      const btn = document.getElementById('calc-angle-mode');
+      if (btn) btn.textContent = calcAngleMode;
+    }
+
+    function calcAction(val) {
+      if (val === 'clear') {
+        calcCurrent = '0';
+        calcExpression = '';
+      } else if (val === 'backspace') {
+        if (calcCurrent.length > 1) {
+          calcCurrent = calcCurrent.slice(0, -1);
+        } else {
+          calcCurrent = '0';
+        }
+      } else if (val === 'plusminus') {
+        if (calcCurrent !== '0') {
+          calcCurrent = calcCurrent.startsWith('-') ? calcCurrent.slice(1) : '-' + calcCurrent;
+        }
+      } else if (val === 'pi') {
+        calcCurrent = String(Math.PI.toFixed(8));
+      } else if (val === 'sin' || val === 'cos' || val === 'tan') {
+        let num = parseFloat(calcCurrent);
+        if (calcAngleMode === 'DEG') num = num * (Math.PI / 180);
+        let res = 0;
+        if (val === 'sin') res = Math.sin(num);
+        if (val === 'cos') res = Math.cos(num);
+        if (val === 'tan') res = Math.tan(num);
+        calcExpression = `${val}(${calcCurrent})`;
+        calcCurrent = String(parseFloat(res.toFixed(8)));
+      } else if (val === 'sqrt') {
+        let num = parseFloat(calcCurrent);
+        if (num < 0) {
+          calcCurrent = 'Erreur';
+        } else {
+          calcExpression = `√(${calcCurrent})`;
+          calcCurrent = String(parseFloat(Math.sqrt(num).toFixed(8)));
+        }
+      } else if (val === 'sq') {
+        let num = parseFloat(calcCurrent);
+        calcExpression = `(${calcCurrent})²`;
+        calcCurrent = String(parseFloat((num * num).toFixed(8)));
+      } else if (val === 'ln') {
+        let num = parseFloat(calcCurrent);
+        calcExpression = `ln(${calcCurrent})`;
+        calcCurrent = num <= 0 ? 'Erreur' : String(parseFloat(Math.log(num).toFixed(8)));
+      } else if (val === 'log') {
+        let num = parseFloat(calcCurrent);
+        calcExpression = `log(${calcCurrent})`;
+        calcCurrent = num <= 0 ? 'Erreur' : String(parseFloat(Math.log10(num).toFixed(8)));
+      } else if (['+', '-', '*', '/', '%'].includes(val)) {
+        calcExpression += ' ' + calcCurrent + ' ' + (val === '*' ? '×' : val === '/' ? '÷' : val);
+        calcCurrent = '0';
+      } else if (val === '(' || val === ')') {
+        calcExpression += ' ' + val;
+      } else if (val === 'equals') {
+        try {
+          let expr = calcExpression + ' ' + calcCurrent;
+          let sanitized = expr.replace(/×/g, '*').replace(/÷/g, '/');
+          // Calcul sécurisé
+          let res = Function('"use strict";return (' + sanitized + ')')();
+          calcExpression = expr + ' =';
+          calcCurrent = String(parseFloat(res.toFixed(8)));
+          calcLastResult = res;
+        } catch(e) {
+          calcCurrent = 'Erreur';
+        }
+      } else {
+        // Chiffres 0-9 et point décimal
+        if (calcCurrent === '0' && val !== '.') {
+          calcCurrent = val;
+        } else if (val === '.' && calcCurrent.includes('.')) {
+          return;
+        } else {
+          calcCurrent += val;
+        }
+      }
+      updateCalcScreen();
+    }
+
+    // Écouteur clavier pour la calculatrice lorsque la fenêtre est active
+    document.addEventListener('keydown', (e) => {
+      const calcWin = document.getElementById('win-calculator');
+      if (calcWin && calcWin.classList.contains('active') && calcWin.classList.contains('open')) {
+        if ('0123456789'.includes(e.key)) calcAction(e.key);
+        else if (e.key === '+') calcAction('+');
+        else if (e.key === '-') calcAction('-');
+        else if (e.key === '*') calcAction('*');
+        else if (e.key === '/') { e.preventDefault(); calcAction('/'); }
+        else if (e.key === '.' || e.key === ',') calcAction('.');
+        else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); calcAction('equals'); }
+        else if (e.key === 'Backspace') calcAction('backspace');
+        else if (e.key === 'Escape') calcAction('clear');
+      }
+    });
+
+    // ==========================================================================
+    // MOTEUR CALENDRIER & HORLOGE MONDIALE (MelaCalendar)
+    // ==========================================================================
+    let calCurrentDate = new Date();
+    let calSelectedDate = new Date();
+
+    function switchCalTab(tabId) {
+      document.querySelectorAll('.cal-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.cal-tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+    }
+
+    function changeCalMonth(delta) {
+      calCurrentDate.setMonth(calCurrentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+      const year = calCurrentDate.getFullYear();
+      const month = calCurrentDate.getMonth();
+
+      const titleEl = document.getElementById('cal-month-label');
+      if (titleEl) titleEl.textContent = `${monthNames[month]} ${year}`;
+
+      const container = document.getElementById('cal-days-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Lundi = 0
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const prevTotalDays = new Date(year, month, 0).getDate();
+
+      // Jours du mois précédent
+      for (let i = firstDayIndex; i > 0; i--) {
+        const d = prevTotalDays - i + 1;
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell other-month';
+        cell.textContent = d;
+        container.appendChild(cell);
+      }
+
+      const today = new Date();
+      // Jours du mois en cours
+      for (let day = 1; day <= totalDays; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell';
+        cell.textContent = day;
+
+        const isToday = (today.getDate() === day && today.getMonth() === month && today.getFullYear() === year);
+        if (isToday) cell.classList.add('today');
+
+        const isSelected = (calSelectedDate.getDate() === day && calSelectedDate.getMonth() === month && calSelectedDate.getFullYear() === year);
+        if (isSelected) cell.classList.add('selected');
+
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        if (localStorage.getItem('melanoce_agenda_' + dateKey)) {
+          cell.classList.add('has-note');
+        }
+
+        cell.onclick = () => {
+          calSelectedDate = new Date(year, month, day);
+          renderCalendar();
+          loadDayNote();
+        };
+
+        container.appendChild(cell);
+      }
+      loadDayNote();
+    }
+
+    function loadDayNote() {
+      const year = calSelectedDate.getFullYear();
+      const month = calSelectedDate.getMonth();
+      const day = calSelectedDate.getDate();
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      const label = document.getElementById('cal-selected-date-label');
+      if (label) label.textContent = `Notes du ${day} ${['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'][month]} ${year}`;
+
+      const input = document.getElementById('cal-day-note-input');
+      if (input) input.value = localStorage.getItem('melanoce_agenda_' + dateKey) || '';
+    }
+
+    function saveDayNote() {
+      const year = calSelectedDate.getFullYear();
+      const month = calSelectedDate.getMonth();
+      const day = calSelectedDate.getDate();
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const input = document.getElementById('cal-day-note-input');
+      if (input) {
+        const val = input.value.trim();
+        if (val) {
+          localStorage.setItem('melanoce_agenda_' + dateKey, val);
+        } else {
+          localStorage.removeItem('melanoce_agenda_' + dateKey);
+        }
+        renderCalendar();
+      }
+    }
+
+    // Horloge Mondiale
+    function updateWorldClocks() {
+      const now = new Date();
+      function fmt(tz) {
+        try {
+          return new Intl.DateTimeFormat('fr-FR', {
+            timeZone: tz,
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+          }).format(now);
+        } catch(e) {
+          return now.toTimeString().split(' ')[0];
+        }
+      }
+      const elAbj = document.getElementById('clock-abidjan');
+      const elPar = document.getElementById('clock-paris');
+      const elNy = document.getElementById('clock-ny');
+      const elTok = document.getElementById('clock-tokyo');
+      if (elAbj) elAbj.textContent = fmt('Africa/Abidjan');
+      if (elPar) elPar.textContent = fmt('Europe/Paris');
+      if (elNy) elNy.textContent = fmt('America/New_York');
+      if (elTok) elTok.textContent = fmt('Asia/Tokyo');
+    }
+    setInterval(updateWorldClocks, 1000);
+
+    // Chronomètre
+    let chronoInterval = null;
+    let chronoTime = 0; // en centièmes de seconde
+
+    function toggleChrono() {
+      const btn = document.getElementById('chrono-start-btn');
+      if (chronoInterval) {
+        clearInterval(chronoInterval);
+        chronoInterval = null;
+        if (btn) btn.textContent = 'Reprendre';
+      } else {
+        const start = Date.now() - chronoTime * 10;
+        chronoInterval = setInterval(() => {
+          chronoTime = Math.floor((Date.now() - start) / 10);
+          const centi = String(chronoTime % 100).padStart(2, '0');
+          const totalSec = Math.floor(chronoTime / 100);
+          const sec = String(totalSec % 60).padStart(2, '0');
+          const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+          const disp = document.getElementById('chrono-display');
+          if (disp) disp.textContent = `${min}:${sec}.${centi}`;
+        }, 10);
+        if (btn) btn.textContent = 'Pause';
+      }
+    }
+
+    function resetChrono() {
+      if (chronoInterval) {
+        clearInterval(chronoInterval);
+        chronoInterval = null;
+      }
+      chronoTime = 0;
+      const disp = document.getElementById('chrono-display');
+      const btn = document.getElementById('chrono-start-btn');
+      if (disp) disp.textContent = '00:00.00';
+      if (btn) btn.textContent = 'Démarrer';
+    }
+
+    async function loadFilesList() {
+      const container = document.getElementById('files-view-container');
+      const statusEl = document.getElementById('files-status-text');
+      if (!container) return;
+
+      container.innerHTML = '<div style="color: #94a3b8; padding: 25px; text-align: center; grid-column: 1/-1;">Chargement du système de fichiers...</div>';
+
+      try {
+        currentFilesList = await MelaStorage.listFiles();
+        renderFilesView();
+      } catch (e) {
+        currentFilesList = await MelaStorage.listFiles();
+        renderFilesView();
+      }
+    }
+
+    function renderFilesView() {
+      const container = document.getElementById('files-view-container');
+      const statusEl = document.getElementById('files-status-text');
+      if (!container) return;
+
+      if (currentFilesList.length === 0) {
+        container.innerHTML = `
+          <div style="color: #94a3b8; padding: 35px; text-align: center; grid-column: 1/-1;">
+            <p style="margin-bottom: 12px; font-size: 0.9rem;">Aucun fichier trouvé dans /melanoce_fs.</p>
+            <button class="files-btn primary" onclick="createNewFilePrompt()">+ Créer un nouveau fichier</button>
+          </div>
+        `;
+        if (statusEl) statusEl.textContent = '0 fichier | Stockage MELA NOCE actif';
+        return;
+      }
+
+      container.innerHTML = '';
+      currentFilesList.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'file-card' + (selectedFileName === file.name ? ' selected' : '');
+        card.onclick = () => selectFile(file.name);
+        card.ondblclick = () => openFileInEditor(file.name);
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        let iconBg = 'linear-gradient(135deg, #0284c7, #2563eb)';
+        let iconText = ext.toUpperCase().slice(0, 3) || 'DOC';
+
+        if (ext === 'md') {
+          iconBg = 'linear-gradient(135deg, #8b5cf6, #d946ef)';
+        } else if (ext === 'js' || ext === 'json' || ext === 'py' || ext === 'sh') {
+          iconBg = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        } else if (ext === 'html' || ext === 'css') {
+          iconBg = 'linear-gradient(135deg, #ec4899, #f43f5e)';
+        }
+
+        const sizeStr = formatBytes(file.size);
+
+        card.innerHTML = `
+          <div class="file-card-icon" style="background: ${iconBg}; color: #ffffff;">
+            ${escapeHtml(iconText)}
+          </div>
+          <div class="file-card-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
+          <div class="file-card-meta">${sizeStr}</div>
+        `;
+        container.appendChild(card);
+      });
+
+      if (statusEl) {
+        statusEl.textContent = `${currentFilesList.length} fichier(s) | Stockage persistant (/melanoce_fs)`;
+      }
+    }
+
+    function selectFile(name) {
+      selectedFileName = name;
+      renderFilesView();
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function createNewFilePrompt() {
+      const name = prompt('Nom du nouveau fichier (ex: mon_document.txt, projet.md, code.js) :', 'mon_fichier.txt');
+      if (!name || !name.trim()) return;
+      const cleanName = name.trim();
+
+      try {
+        await MelaStorage.saveFile(cleanName, '');
+        await loadFilesList();
+        openFileInEditor(cleanName);
+      } catch (e) {
+        alert('Erreur lors de la création du fichier.');
+      }
+    }
+
+    async function deleteSelectedFile() {
+      if (!selectedFileName) {
+        alert('Veuillez cliquer sur un fichier pour le sélectionner avant de le supprimer.');
+        return;
+      }
+      if (!confirm(`Supprimer définitivement le fichier "${selectedFileName}" ?`)) return;
+
+      try {
+        const res = await fetch('/api/files?name=' + encodeURIComponent(selectedFileName), { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) {
+          selectedFileName = null;
+          await loadFilesList();
+        }
+      } catch (e) {
+        alert('Erreur lors de la suppression.');
+      }
+    }
+
+    async function openFileInEditor(fileName) {
+      if (!fileName) {
+        if (selectedFileName) fileName = selectedFileName;
+        else {
+          alert('Sélectionnez un fichier ou cliquez sur Nouveau fichier.');
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/files/read?name=' + encodeURIComponent(fileName));
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        document.getElementById('editor-filename').value = data.name;
+        document.getElementById('editor-content').value = data.content || '';
+        document.getElementById('editor-win-title').textContent = `${data.name} — MelaEdit`;
+        updateEditorStats();
+        document.getElementById('editor-status').textContent = '✓ Fichier chargé';
+        document.getElementById('editor-status').style.color = '#38bdf8';
+
+        openWindow('win-editor');
+      } catch (e) {
+        alert('Erreur de lecture du fichier.');
+      }
+    }
+
+    async function saveCurrentEditorFile() {
+      const filename = document.getElementById('editor-filename').value.trim();
+      const content = document.getElementById('editor-content').value;
+      const statusEl = document.getElementById('editor-status');
+
+      if (!filename) {
+        alert('Veuillez entrer un nom de fichier.');
+        return;
+      }
+
+      statusEl.textContent = 'Enregistrement en cours...';
+      statusEl.style.color = '#f59e0b';
+
+      try {
+        const res = await fetch('/api/files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: filename, content: content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.textContent = '✓ Enregistré à ' + new Date().toLocaleTimeString();
+          statusEl.style.color = '#10b981';
+          document.getElementById('editor-win-title').textContent = `${filename} — MelaEdit`;
+          loadFilesList(); // Met à jour l'explorateur
+        } else {
+          statusEl.textContent = '❌ Erreur de sauvegarde';
+          statusEl.style.color = '#f87171';
+        }
+      } catch (e) {
+        statusEl.textContent = '❌ Erreur réseau';
+        statusEl.style.color = '#f87171';
+      }
+    }
+
+    function newEditorFile() {
+      document.getElementById('editor-filename').value = 'sans_titre.txt';
+      document.getElementById('editor-content').value = '';
+      document.getElementById('editor-win-title').textContent = 'Nouveau fichier — MelaEdit';
+      document.getElementById('editor-status').textContent = 'Nouveau document vierge';
+      document.getElementById('editor-status').style.color = '#94a3b8';
+      updateEditorStats();
+    }
+
+    function downloadCurrentFile() {
+      const filename = document.getElementById('editor-filename').value.trim() || 'note.txt';
+      const content = document.getElementById('editor-content').value;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    function downloadSelectedFile() {
+      if (!selectedFileName) {
+        alert('Sélectionnez un fichier dans la liste.');
+        return;
+      }
+      openFileInEditor(selectedFileName);
+      setTimeout(downloadCurrentFile, 250);
+    }
+
+    function updateEditorStats() {
+      const content = document.getElementById('editor-content').value;
+      const charCount = content.length;
+      const lineCount = content ? content.split('\n').length : 0;
+      const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+      const statsEl = document.getElementById('editor-stats-text');
+      if (statsEl) {
+        statsEl.textContent = `${lineCount} lignes | ${wordCount} mots | ${charCount} caractères`;
+      }
+    }
+
+    // --- Terminal interactif enrichi avec système de fichiers ---
+    async function handleTerminalKey(e) {
+      if (e.key === 'Enter') {
+        const input = document.getElementById('term-input');
+        const display = document.getElementById('term-display');
+        const rawCmd = input.value.trim();
+        const cmd = rawCmd.toLowerCase();
+        input.value = '';
+
+        display.innerText += `\nkouamelan@melanoce:~$ ${rawCmd}`;
+
+        if (cmd === 'help') {
+          display.innerText += `\nCommandes disponibles :
+  - ls              : Lister tous les fichiers enregistrés
+  - cat [fichier]   : Afficher le contenu d'un fichier
+  - touch [fichier] : Créer un fichier vierge
+  - echo "..." > f  : Écrire du texte dans un fichier
+  - edit [fichier]  : Ouvrir le fichier dans l'éditeur MelaEdit
+  - rm [fichier]    : Supprimer un fichier
+  - files           : Ouvrir l'explorateur MelaFiles
+  - web [url]       : Lancer le navigateur Web MelaNet HTTPS
+  - info / signature: Identité et conception Kouamelan
+  - win11 / linux   : Basculer de mode UI
+  - clear           : Effacer l'écran`;
+        } else if (cmd === 'ls') {
+          try {
+            const res = await fetch('/api/files');
+            const data = await res.json();
+            let out = "\nFichiers dans /melanoce_fs :\n";
+            if (data.files && data.files.length) {
+              data.files.forEach(f => {
+                out += `  -rw-r--r-- kouamelan kouamelan ${String(f.size).padStart(6, ' ')}B  ${f.name}\n`;
+              });
+              out += `Total : ${data.files.length} fichier(s)`;
+            } else {
+              out += "  (aucun fichier)";
+            }
+            display.innerText += out;
+          } catch(e) {
+            display.innerText += "\nErreur lors de la lecture du répertoire.";
+          }
+        } else if (cmd.startsWith('cat ')) {
+          const name = rawCmd.substring(4).trim();
+          try {
+            const res = await fetch('/api/files/read?name=' + encodeURIComponent(name));
+            const data = await res.json();
+            if (data.content !== undefined) {
+              display.innerText += `\n--- Contenu de ${name} ---\n${data.content}\n--- Fin du fichier ---`;
+            } else {
+              display.innerText += `\nErreur : Fichier "${name}" introuvable.`;
+            }
+          } catch(e) {
+            display.innerText += "\nErreur de lecture du fichier.";
+          }
+        } else if (cmd.startsWith('touch ')) {
+          const name = rawCmd.substring(6).trim();
+          try {
+            await fetch('/api/files', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: name, content: '' })
+            });
+            display.innerText += `\nFichier "${name}" créé avec succès dans /melanoce_fs.`;
+            loadFilesList();
+          } catch(e) {
+            display.innerText += "\nErreur lors de la création.";
+          }
+        } else if (rawCmd.includes('>') && rawCmd.startsWith('echo ')) {
+          const parts = rawCmd.substring(5).split('>');
+          const textContent = parts[0].trim().replace(/^["']|["']$/g, '');
+          const fileName = parts[1].trim();
+          try {
+            await fetch('/api/files', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: fileName, content: textContent })
+            });
+            display.innerText += `\nÉcrit dans "${fileName}" avec succès.`;
+            loadFilesList();
+          } catch(e) {
+            display.innerText += "\nErreur lors de l'écriture.";
+          }
+        } else if (cmd.startsWith('rm ')) {
+          const name = rawCmd.substring(3).trim();
+          try {
+            const res = await fetch('/api/files?name=' + encodeURIComponent(name), { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+              display.innerText += `\nFichier "${name}" supprimé.`;
+              loadFilesList();
+            } else {
+              display.innerText += `\nErreur : Impossible de supprimer "${name}".`;
+            }
+          } catch(e) {
+            display.innerText += "\nErreur de suppression.";
+          }
+        } else if (cmd.startsWith('edit ')) {
+          const name = rawCmd.substring(5).trim();
+          openFileInEditor(name);
+          display.innerText += `\nOuverture de "${name}" dans MelaEdit...`;
+        } else if (cmd === 'files') {
+          openWindow('win-files');
+          display.innerText += `\n[Explorateur MelaFiles ouvert]`;
+        } else if (cmd.startsWith('web')) {
+          openWindow('win-browser');
+          const parts = rawCmd.split(' ');
+          if (parts[1]) navigateTo(parts[1]);
+          display.innerText += `\n[Navigateur MelaNet HTTPS ouvert]`;
+        } else if (cmd === 'info' || cmd === 'signature') {
+          display.innerText += `\nNom officiel : MELA NOCE\nSignature : « Conception et réalisation : Kouamelan »\nDevise : Your Device. Your Universe.`;
+        } else if (cmd === 'win11') {
+          switchOsMode('win11');
+          display.innerText += `\n[Passage en mode Windows 11 Fluent]`;
+        } else if (cmd === 'linux') {
+          switchOsMode('linux');
+          display.innerText += `\n[Passage en mode Linux IA Workstation]`;
+        } else if (cmd === 'clear') {
+          display.innerText = "MELA NOCE Terminal v1.0\n";
+        } else if (cmd !== '') {
+          display.innerText += `\nCommande "${rawCmd}" inconnue. Tapez "help" pour la liste des commandes.`;
+        }
+
+        const scrollArea = input.closest('.win-body-scroll');
+        if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Démarrage : Initialisation des fichiers et ouverture de l'environnement
+    window.addEventListener('DOMContentLoaded', () => {
+      initAllWindowsDrag();
+      MelaStorage.seedDefaultFiles();
+      loadFilesList();
+      renderCalendar();
+      updateWorldClocks();
+      openWindow('win-browser');
+      navigateTo('https://fr.wikipedia.org/wiki/Portail:Accueil');
+
+      // Enregistrement du Service Worker PWA pour mode hors-ligne
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then(() => {
+          console.log('[MELA NOCE] PWA Service Worker actif');
+        }).catch(err => {
+          console.warn('[MELA NOCE] Service Worker non disponible :', err);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
