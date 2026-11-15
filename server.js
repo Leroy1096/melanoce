@@ -115,7 +115,7 @@ function handleRequest(req, res) {
   }
 
   // --- API PROXY WEB HTTPS ---
-  if (pathname === '/api/proxy') {
+  if (pathname === '/api/proxy' || pathname === '/api/proxy.js' || pathname.startsWith('/api/proxy')) {
     let target = parsedUrl.searchParams.get('url');
     if (!target) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -234,7 +234,27 @@ function handleRequest(req, res) {
   }
 
   // --- API FICHIERS ---
-  if (pathname === '/api/files' && req.method === 'GET') {
+  const isFilesRoute = pathname === '/api/files' || pathname === '/api/files.js' || pathname.startsWith('/api/files');
+  if (isFilesRoute && req.method === 'GET') {
+    const action = parsedUrl.searchParams.get('action');
+    const fileName = parsedUrl.searchParams.get('name');
+    if (action === 'read' || pathname.includes('/read') || fileName) {
+      if (!fileName) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Nom de fichier manquant.' }));
+      }
+      const safePath = path.normalize(path.join(FS_DIR, fileName));
+      fs.readFile(safePath, 'utf8', (err, data) => {
+        if (err) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Fichier introuvable.' }));
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ name: fileName, content: data }));
+      });
+      return;
+    }
+
     fs.readdir(FS_DIR, (err, fileNames) => {
       if (err) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -254,25 +274,7 @@ function handleRequest(req, res) {
     return;
   }
 
-  if (pathname === '/api/files/read' && req.method === 'GET') {
-    const fileName = parsedUrl.searchParams.get('name');
-    if (!fileName) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'Nom de fichier manquant.' }));
-    }
-    const safePath = path.normalize(path.join(FS_DIR, fileName));
-    fs.readFile(safePath, 'utf8', (err, data) => {
-      if (err) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Fichier introuvable.' }));
-      }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ name: fileName, content: data }));
-    });
-    return;
-  }
-
-  if (pathname === '/api/files' && req.method === 'POST') {
+  if (isFilesRoute && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
@@ -297,7 +299,7 @@ function handleRequest(req, res) {
     return;
   }
 
-  if (pathname === '/api/files' && req.method === 'DELETE') {
+  if (isFilesRoute && req.method === 'DELETE') {
     const fileName = parsedUrl.searchParams.get('name');
     const safePath = path.normalize(path.join(FS_DIR, fileName || ''));
     try {
@@ -305,6 +307,12 @@ function handleRequest(req, res) {
     } catch(e) {}
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ success: true, name: fileName }));
+  }
+
+  // --- SÉCURITÉ : TOUTE ROUTE /api/ NON RECONNUE RETOURNE JSON 404, JAMAIS INDEX.HTML ---
+  if (pathname.startsWith('/api/')) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ error: 'Route API introuvable : ' + pathname }));
   }
 
   // --- SERVEUR DE FICHIERS STATIQUES ---
@@ -315,28 +323,32 @@ function handleRequest(req, res) {
   if (!fs.existsSync(resolvedPath)) {
     const alt1 = path.join(__dirname, cleanPath);
     const alt2 = path.join(process.cwd(), cleanPath);
-    const alt3 = path.join(ROOT_DIR, 'index.html');
     if (fs.existsSync(alt1)) resolvedPath = alt1;
     else if (fs.existsSync(alt2)) resolvedPath = alt2;
-    else resolvedPath = alt3;
   }
 
   const ext = path.extname(resolvedPath).toLowerCase();
+
+  // Si le fichier n'existe pas :
+  if (!fs.existsSync(resolvedPath)) {
+    // Si c'est un asset avec extension (js, css, png, json...), renvoyer 404 direct
+    if (ext && ext !== '.html') {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
+      return res.end('Fichier non trouvé : ' + cleanPath);
+    }
+    // Repli SPA index.html uniquement pour les routes HTML/sans extension
+    resolvedPath = path.join(ROOT_DIR, 'index.html');
+    if (!fs.existsSync(resolvedPath)) {
+      resolvedPath = path.join(__dirname, 'index.html');
+    }
+  }
+
   const mime = MIME_TYPES[ext] || 'text/html; charset=UTF-8';
 
   fs.readFile(resolvedPath, (err, content) => {
     if (err) {
-      // Dernier recours : lire index.html
-      const fallbackIndex = path.join(__dirname, 'index.html');
-      fs.readFile(fallbackIndex, (err2, indexContent) => {
-        if (err2) {
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
-          return res.end('<!DOCTYPE html><html><body><h1>MELA NOCE</h1><p>Chargement du système...</p><script>window.location.reload();</script></body></html>');
-        }
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
-        return res.end(indexContent);
-      });
-      return;
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
+      return res.end('Erreur de lecture : ' + cleanPath);
     }
     res.writeHead(200, { 'Content-Type': mime });
     res.end(content);

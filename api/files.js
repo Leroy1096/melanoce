@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
   }
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const action = parsedUrl.searchParams.get('action') || (parsedUrl.pathname.includes('/read') ? 'read' : null);
+  const action = (req.query && req.query.action) || parsedUrl.searchParams.get('action') || (parsedUrl.pathname.includes('/read') ? 'read' : null);
 
   // 1. Lecture de la liste des fichiers : GET /api/files
   if (req.method === 'GET' && !action && !parsedUrl.searchParams.get('name')) {

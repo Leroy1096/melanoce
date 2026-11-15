@@ -2,6 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- Protection Anti-Imbrication Récursive (Frame Buster) -->
+  <script>
+    if (window.self !== window.top) {
+      window.stop && window.stop();
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.innerHTML = '<div style="background:#090d16;color:#94a3b8;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:24px;text-align:center;"><div style="background:rgba(255,255,255,0.05);padding:28px;border-radius:16px;border:1px solid rgba(255,255,255,0.1);max-width:440px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3 style="color:#f8fafc;margin:0 0 8px 0;font-size:18px;">Navigation MelaNet</h3><p style="font-size:14px;color:#94a3b8;line-height:1.5;margin:0 0 16px 0;">Le système MELA NOCE ne peut pas être imbriqué récursivement à l\'intérieur de son propre navigateur.</p></div></div>';
+      });
+      throw new Error("Recursive MelaNoce iframe embedding blocked.");
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MELA NOCE — Système d'Exploitation Hybride & Navigateur HTTPS</title>
   
@@ -1493,7 +1503,7 @@
         right: 0 !important;
         bottom: var(--taskbar-height) !important;
         width: 100% !important;
-        height: calc(100dvh - var(--taskbar-height) - 38px) !important;
+        height: calc(100dvh - var(--taskbar-height)) !important;
         max-width: 100% !important;
         min-width: 0 !important;
         border-radius: 16px 16px 0 0 !important;
@@ -2103,7 +2113,7 @@
     <!-- ==================== FENÊTRES SYSTÈME ==================== -->
 
     <!-- FENÊTRE 1 : NAVIGATEUR WEB SÉCURISÉ HTTPS (MELANET BROWSER) — OUVERTE EN PRIORITÉ -->
-    <div class="os-window open active" id="win-browser" style="top: 65px; left: calc(50% - 370px); width: 740px; height: 550px;" onclick="bringToFront(this)">
+    <div class="os-window" id="win-browser" style="top: 65px; left: calc(50% - 370px); width: 740px; height: 550px;" onclick="bringToFront(this)">
       <div class="win-header-bar">
         <div class="win-title-wrap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
@@ -2883,6 +2893,13 @@ Tapez « help » pour la liste des commandes.</div>
       } else if (id === 'win-calendar') {
         renderCalendar();
         updateWorldClocks();
+      } else if (id === 'win-browser') {
+        const iframe = document.getElementById('browser-iframe');
+        const startScreen = document.getElementById('browser-start-screen');
+        if (!iframe.src || iframe.src === 'about:blank' || iframe.getAttribute('src') === 'about:blank') {
+          if (startScreen) startScreen.style.display = 'flex';
+          if (iframe) iframe.style.display = 'none';
+        }
       }
     }
 
@@ -3121,6 +3138,10 @@ Tapez « help » pour la liste des commandes.</div>
     }
 
     function loadPage(targetUrl) {
+      if (targetUrl.includes(window.location.host) || (window.location.hostname && targetUrl.includes(window.location.hostname))) {
+        alert("Action non autorisée : Le système MELA NOCE ne peut pas être imbriqué récursivement à l'intérieur de son propre navigateur.");
+        return;
+      }
       const input = document.getElementById('browser-url-input');
       const startScreen = document.getElementById('browser-start-screen');
       const iframe = document.getElementById('browser-iframe');
@@ -4114,8 +4135,7 @@ Tapez « help » pour la liste des commandes.</div>
       loadFilesList();
       renderCalendar();
       updateWorldClocks();
-      openWindow('win-browser');
-      navigateTo('https://fr.wikipedia.org/wiki/Portail:Accueil');
+      // Démarrage épuré du bureau MELA NOCE : pas d'ouverture forcée de fenêtre
 
       // Enregistrement du Service Worker PWA pour mode hors-ligne
       if ('serviceWorker' in navigator) {

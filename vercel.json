@@ -6,30 +6,40 @@
       "includeFiles": "index.html"
     }
   },
-  "rewrites": [
-    { "source": "/api/proxy", "destination": "/api/proxy.js" },
-    { "source": "/api/files/read", "destination": "/api/files.js?action=read" },
-    { "source": "/api/files", "destination": "/api/files.js" }
-  ],
   "headers": [
     {
       "source": "/manifest.webmanifest",
       "headers": [
-        { "key": "Content-Type", "value": "application/manifest+json; charset=UTF-8" }
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json; charset=UTF-8"
+        }
       ]
     },
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Content-Type", "value": "application/javascript; charset=UTF-8" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=UTF-8"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

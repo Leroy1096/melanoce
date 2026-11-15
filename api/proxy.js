@@ -74,7 +74,7 @@ module.exports = (req, res) => {
   }
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  let target = parsedUrl.searchParams.get('url');
+  let target = (req.query && req.query.url) || parsedUrl.searchParams.get('url');
 
   if (!target) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
