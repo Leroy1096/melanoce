@@ -1,0 +1,81 @@
+name: Compilation APK Android & Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Configuration du JDK Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Installer les dépendances NPM
+        run: npm install
+
+      - name: Synchroniser les assets web dans Android
+        run: npm run cap:sync
+
+      - name: Compiler l'APK Android (Debug universel)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Renommer et préparer l'APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk MELA-NOCE-v1.0.apk
+          cp MELA-NOCE-v1.0.apk MELA-NOCE.apk
+
+      - name: Sauvegarder l'artefact APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MELA-NOCE-Android-APK
+          path: MELA-NOCE.apk
+          retention-days: 30
+
+      - name: Publier la Release GitHub avec l'APK
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: v1.0.0
+          name: "MELA NOCE v1.0.0 — Application Android (APK)"
+          make_latest: true
+          files: |
+            MELA-NOCE.apk
+            MELA-NOCE-v1.0.apk
+          body: |
+            ## MELA NOCE v1.0.0 — Application Mobile Android Officielle
+            *« Your Device. Your Universe. » — Conception et réalisation : Kouamelan*
+
+            ### 📱 Téléchargement Direct de l'APK :
+            Cliquez sur le lien ci-dessous pour installer l'application sur n'importe quel smartphone ou tablette Android :
+            - **[Télécharger MELA-NOCE.apk](https://github.com/${{ github.repository }}/releases/download/v1.0.0/MELA-NOCE.apk)**
+
+            ### 📋 Instructions d'installation :
+            1. Téléchargez le fichier **MELA-NOCE.apk** sur votre appareil Android.
+            2. Ouvrez le fichier téléchargé.
+            3. Si demandé par Android, autorisez l'option **« Installer des applications inconnues »** pour votre navigateur/gestionnaire de fichiers.
+            4. Cliquez sur **Installer**, puis lancez **MELA NOCE** !

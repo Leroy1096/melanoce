@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node -c server.js && node -c api/proxy.js && node -c api/files.js && node -c sw.js"
+    "test": "node -c server.js && node -c api/proxy.js && node -c api/files.js && node -c sw.js",
+    "build:web": "mkdir -p www && cp -r index.html manifest.webmanifest sw.js images www/",
+    "cap:sync": "npm run build:web && npx cap sync android",
+    "android:build": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon"
   },
   "keywords": [
     "melanoce",
@@ -14,11 +17,17 @@
     "operating-system",
     "pwa",
     "pocket-pc",
-    "linux",
-    "windows11",
-    "https-browser",
+    "android",
+    "capacitor",
     "kouamelan"
   ],
   "author": "Kouamelan",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0"
+  }
 }

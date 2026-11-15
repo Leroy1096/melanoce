@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MELA NOCE</string>
+    <string name="title_activity_main">MELA NOCE</string>
+    <string name="package_name">ci.melanoce.app</string>
+    <string name="custom_url_scheme">ci.melanoce.app</string>
+</resources>

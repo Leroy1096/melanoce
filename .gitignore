@@ -5,3 +5,8 @@ patch_*.js
 .vercel/
 .DS_Store
 .npm/
+android/.gradle/
+android/app/build/
+android/build/
+*.apk
+www/
