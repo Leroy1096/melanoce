@@ -1,6 +1,11 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "functions": {
+    "server.js": {
+      "includeFiles": "index.html"
+    }
+  },
   "rewrites": [
     { "source": "/api/proxy", "destination": "/api/proxy.js" },
     { "source": "/api/files/read", "destination": "/api/files.js?action=read" },

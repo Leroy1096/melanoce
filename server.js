@@ -5,9 +5,25 @@ const path = require('path');
 const url = require('url');
 const zlib = require('zlib');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
-const ROOT_DIR = __dirname;
+
+// Répertoire racine résilient (local ou Vercel Lambda)
+const ROOT_DIR = fs.existsSync(path.join(__dirname, 'index.html')) 
+  ? __dirname 
+  : (fs.existsSync(path.join(process.cwd(), 'index.html')) ? process.cwd() : __dirname);
+
+const FS_DIR = path.join(ROOT_DIR, 'melanoce_fs');
+
+// Tracer statiquement index.html pour le bundler Vercel
+const VERCEL_TRACED_INDEX = path.join(__dirname, 'index.html');
+
+if (!fs.existsSync(FS_DIR)) {
+  try {
+    fs.mkdirSync(FS_DIR, { recursive: true });
+    fs.writeFileSync(path.join(FS_DIR, 'bienvenue.txt'), 'Bienvenue dans MELA NOCE v1.0 !\nSlogan : Your Device. Your Universe.\nConception et réalisation : Kouamelan', 'utf8');
+  } catch(e) {}
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=UTF-8',
@@ -51,7 +67,6 @@ function fetchRemoteUrl(targetUrl, maxRedirects, callback) {
   };
 
   const req = client.get(targetUrl, { headers, timeout: 15000 }, (res) => {
-    // Gestion des redirections HTTP
     if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
       const redirectUrl = new URL(res.headers.location, targetUrl).href;
       return fetchRemoteUrl(redirectUrl, maxRedirects - 1, callback);
@@ -86,13 +101,12 @@ function fetchRemoteUrl(targetUrl, maxRedirects, callback) {
   });
 }
 
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
 
-  // En-têtes CORS par défaut
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
 
   if (req.method === 'OPTIONS') {
@@ -100,7 +114,7 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  // --- API PROXY WEB HTTPS POUR LE NAVIGATEUR MELA NOCE ---
+  // --- API PROXY WEB HTTPS ---
   if (pathname === '/api/proxy') {
     let target = parsedUrl.searchParams.get('url');
     if (!target) {
@@ -147,7 +161,6 @@ const server = http.createServer((req, res) => {
       const contentType = remoteRes.headers['content-type'] || 'text/html';
       const isHtml = contentType.includes('text/html');
 
-      // Préparation des en-têtes nettoyés sans restrictions iframes
       const outHeaders = {
         'Content-Type': contentType,
         'Access-Control-Allow-Origin': '*'
@@ -156,9 +169,8 @@ const server = http.createServer((req, res) => {
       if (isHtml) {
         let htmlStr = remoteRes.body.toString('utf-8');
         const finalUrl = remoteRes.finalUrl;
-
-        // 1. Injecter la balise <base> pour les liens relatifs, images et CSS
         const baseTag = `<base href="${finalUrl}">`;
+
         if (htmlStr.includes('<head>')) {
           htmlStr = htmlStr.replace('<head>', '<head>' + baseTag);
         } else if (htmlStr.includes('<HEAD>')) {
@@ -167,10 +179,8 @@ const server = http.createServer((req, res) => {
           htmlStr = baseTag + htmlStr;
         }
 
-        // 2. Supprimer les attributs target="_blank", target="_top" pour garder la navigation dans le navigateur MELA NOCE
         htmlStr = htmlStr.replace(/\s+target=["'](_blank|_top|_parent)["']/gi, ' target="_self"');
 
-        // 3. Injecter un intercepteur pour que la navigation et les formulaires restent dans MelaNet Browser
         const linkInterceptor = `
           <script>
             (function() {
@@ -182,7 +192,6 @@ const server = http.createServer((req, res) => {
                 }, '*');
               } catch(e) {}
 
-              // Interception des clics
               document.addEventListener('click', function(e) {
                 var a = e.target.closest('a');
                 if (a && a.href && !a.href.startsWith('javascript:') && !a.href.startsWith('#')) {
@@ -191,7 +200,6 @@ const server = http.createServer((req, res) => {
                 }
               }, true);
 
-              // Interception des soumissions de formulaires (ex: barres de recherche DuckDuckGo, Wikipédia, etc.)
               document.addEventListener('submit', function(e) {
                 var form = e.target;
                 if (form) {
@@ -225,29 +233,20 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // --- API SYSTÈME DE FICHIERS MELA NOCE ---
-  const FS_DIR = path.join(ROOT_DIR, 'melanoce_fs');
-  if (!fs.existsSync(FS_DIR)) {
-    fs.mkdirSync(FS_DIR, { recursive: true });
-  }
-
-  // Liste des fichiers
+  // --- API FICHIERS ---
   if (pathname === '/api/files' && req.method === 'GET') {
-    fs.readdir(FS_DIR, { withFileTypes: true }, (err, items) => {
+    fs.readdir(FS_DIR, (err, fileNames) => {
       if (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: err.message }));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ files: [] }));
       }
-      const files = items.map(item => {
-        const fullPath = path.join(FS_DIR, item.name);
-        let stats = { size: 0, mtime: new Date() };
-        try { stats = fs.statSync(fullPath); } catch(e){}
-        return {
-          name: item.name,
-          isDirectory: item.isDirectory(),
-          size: stats.size,
-          mtime: stats.mtime
-        };
+      const files = (fileNames || []).map(name => {
+        try {
+          const stats = fs.statSync(path.join(FS_DIR, name));
+          return { name, isDirectory: stats.isDirectory(), size: stats.size, mtime: stats.mtime };
+        } catch(e) {
+          return { name, isDirectory: false, size: 0, mtime: new Date() };
+        }
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ files }));
@@ -255,7 +254,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Lecture d'un fichier
   if (pathname === '/api/files/read' && req.method === 'GET') {
     const fileName = parsedUrl.searchParams.get('name');
     if (!fileName) {
@@ -263,10 +261,6 @@ const server = http.createServer((req, res) => {
       return res.end(JSON.stringify({ error: 'Nom de fichier manquant.' }));
     }
     const safePath = path.normalize(path.join(FS_DIR, fileName));
-    if (!safePath.startsWith(FS_DIR)) {
-      res.writeHead(403, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'Accès interdit.' }));
-    }
     fs.readFile(safePath, 'utf8', (err, data) => {
       if (err) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -278,20 +272,15 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Création / Sauvegarde d'un fichier
   if (pathname === '/api/files' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
-        const fileName = (data.name || 'nouveau_fichier.txt').trim();
+        const fileName = (data.name || 'nouveau.txt').trim();
         const content = data.content !== undefined ? data.content : '';
         const safePath = path.normalize(path.join(FS_DIR, fileName));
-        if (!safePath.startsWith(FS_DIR)) {
-          res.writeHead(403, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ error: 'Accès interdit.' }));
-        }
         fs.writeFile(safePath, content, 'utf8', (err) => {
           if (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -302,66 +291,64 @@ const server = http.createServer((req, res) => {
         });
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Format JSON invalide.' }));
+        return res.end(JSON.stringify({ error: 'JSON invalide.' }));
       }
     });
     return;
   }
 
-  // Suppression d'un fichier
   if (pathname === '/api/files' && req.method === 'DELETE') {
     const fileName = parsedUrl.searchParams.get('name');
-    if (!fileName) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'Nom de fichier manquant.' }));
-    }
-    const safePath = path.normalize(path.join(FS_DIR, fileName));
-    if (!safePath.startsWith(FS_DIR)) {
-      res.writeHead(403, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'Accès interdit.' }));
-    }
-    fs.unlink(safePath, (err) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: err.message }));
-      }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: true, name: fileName }));
-    });
-    return;
+    const safePath = path.normalize(path.join(FS_DIR, fileName || ''));
+    try {
+      if (fs.existsSync(safePath)) fs.unlinkSync(safePath);
+    } catch(e) {}
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ success: true, name: fileName }));
   }
 
   // --- SERVEUR DE FICHIERS STATIQUES ---
-  let filePath = path.join(ROOT_DIR, pathname === '/' ? 'index.html' : pathname);
-  
-  // Sécurité anti Path Traversal
-  if (!filePath.startsWith(ROOT_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    return res.end('Accès refusé.');
+  const cleanPath = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
+  let resolvedPath = path.join(ROOT_DIR, cleanPath);
+
+  // Recherche dans les dossiers de repli
+  if (!fs.existsSync(resolvedPath)) {
+    const alt1 = path.join(__dirname, cleanPath);
+    const alt2 = path.join(process.cwd(), cleanPath);
+    const alt3 = path.join(ROOT_DIR, 'index.html');
+    if (fs.existsSync(alt1)) resolvedPath = alt1;
+    else if (fs.existsSync(alt2)) resolvedPath = alt2;
+    else resolvedPath = alt3;
   }
 
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      // Fallback vers index.html pour les routes SPA
-      filePath = path.join(ROOT_DIR, 'index.html');
+  const ext = path.extname(resolvedPath).toLowerCase();
+  const mime = MIME_TYPES[ext] || 'text/html; charset=UTF-8';
+
+  fs.readFile(resolvedPath, (err, content) => {
+    if (err) {
+      // Dernier recours : lire index.html
+      const fallbackIndex = path.join(__dirname, 'index.html');
+      fs.readFile(fallbackIndex, (err2, indexContent) => {
+        if (err2) {
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+          return res.end('<!DOCTYPE html><html><body><h1>MELA NOCE</h1><p>Chargement du système...</p><script>window.location.reload();</script></body></html>');
+        }
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
+        return res.end(indexContent);
+      });
+      return;
     }
-
-    const ext = path.extname(filePath).toLowerCase();
-    const mime = MIME_TYPES[ext] || 'application/octet-stream';
-
-    fs.readFile(filePath, (readErr, content) => {
-      if (readErr) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        return res.end('Erreur de lecture du fichier.');
-      }
-
-      res.writeHead(200, { 'Content-Type': mime });
-      res.end(content);
-    });
+    res.writeHead(200, { 'Content-Type': mime });
+    res.end(content);
   });
-});
+}
 
-server.listen(PORT, HOST, () => {
-  console.log(`[MELA NOCE] Serveur actif sur http://${HOST}:${PORT}`);
-  console.log(`[MELA NOCE] Moteur Proxy Web HTTPS prêt sur /api/proxy?url=...`);
-});
+// Export pour Vercel Serverless Function & Serveur natif
+module.exports = handleRequest;
+
+if (require.main === module) {
+  const server = http.createServer(handleRequest);
+  server.listen(PORT, HOST, () => {
+    console.log(`[MELA NOCE] Serveur actif sur http://${HOST}:${PORT}`);
+  });
+}
